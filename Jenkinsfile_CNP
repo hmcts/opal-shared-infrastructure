@@ -2,4 +2,4 @@
 
 @Library("Infrastructure")
 
-withPipeline('opal') {}
+withInfraPipeline('opal') {}
