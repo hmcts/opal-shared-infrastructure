@@ -1,5 +1,9 @@
 #!groovy
 
-@Library("Infrastructure")
+@Library("Infrastructure") _
 
-withInfraPipeline('opal') {}
+def product = "opal"
+
+withInfraPipeline(product) {
+    enableSlackNotifications('#opal-builds')
+}
