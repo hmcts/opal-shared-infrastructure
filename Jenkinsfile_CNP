@@ -1,0 +1,5 @@
+#!groovy
+
+@Library("Infrastructure")
+
+withPipeline('opal') {}
