@@ -37,7 +37,7 @@ module "sftp_storage" {
 
 resource "azurerm_storage_container" "sftp_container" {
   name                  = "outbound"
-  storage_account_name  = module.sftp_storage.storageaccount_name
+  storage_account_name  = module.sftp_storage.storage_account_name
   container_access_type = "private"
 }
 
