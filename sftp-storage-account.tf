@@ -59,12 +59,6 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
   ssh_password_enabled = true
   home_directory       = "outbound"
 
-  for k in data.azurerm_key_vault_secret.sftp_user_keys : {
-       ssh_authorized_key {
-           description = k.name
-           key         = k.value
-         }
-  }
   permission_scope {
     permissions {
       read   = true
@@ -75,6 +69,13 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
     }
     service       = "blob"
     resource_name = azurerm_storage_container.sftp_container.name
+  }
+
+  for k in data.azurerm_key_vault_secret.sftp_user_keys : {
+       ssh_authorized_key {
+          "description" = k.name,
+           "key" = k.value
+         }
   }
 }
 
