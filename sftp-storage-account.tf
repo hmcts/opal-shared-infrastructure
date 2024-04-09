@@ -52,56 +52,56 @@ data "azurerm_key_vault_secret" "sftp_user_name" {
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
-resource "azurerm_storage_account_local_user" "sftp_local_user" {
-  name                 = data.azurerm_key_vault_secret.sftp_user_name.value
-  storage_account_id   = azurerm_storage_account.sftp_storage.id
-  ssh_key_enabled      = true
-  ssh_password_enabled = true
-  home_directory       = "outbound"
-
-  permission_scope {
-    permissions {
-      read   = true
-      create = true
-      list = true
-      write = true
-      delete = true
-    }
-    service       = "blob"
-    resource_name = azurerm_storage_container.sftp_container.name
-  }
-
-  for k in data.azurerm_key_vault_secret.sftp_user_keys : {
-       ssh_authorized_key {
-          "description" = k.name,
-           "key" = k.value
-         }
-  }
-}
+# resource "azurerm_storage_account_local_user" "sftp_local_user" {
+#   name                 = data.azurerm_key_vault_secret.sftp_user_name.value
+#   storage_account_id   = azurerm_storage_account.sftp_storage.id
+#   ssh_key_enabled      = true
+#   ssh_password_enabled = true
+#   home_directory       = "outbound"
+#
+#   permission_scope {
+#     permissions {
+#       read   = true
+#       create = true
+#       list = true
+#       write = true
+#       delete = true
+#     }
+#     service       = "blob"
+#     resource_name = azurerm_storage_container.sftp_container.name
+#   }
+#
+#   for k in data.azurerm_key_vault_secret.sftp_user_keys : {
+#        ssh_authorized_key {
+#           "description" = k.name,
+#            "key" = k.value
+#          }
+#   }
+# }
 
 #TODO: Replace this API call with azurerm_storage_account_local_user resource
-# resource "azapi_resource" "add_local_user" {
-#   type      = "Microsoft.Storage/storageAccounts/localUsers@2021-09-01"
-#   name      = data.azurerm_key_vault_secret.sftp_user_name.value
-#   parent_id = module.sftp_storage.storageaccount_id
-#
-#   body = jsonencode({
-#     properties = {
-#       "permissionScopes" : [
-#         {
-#           "permissions" : "rwdcl",
-#           "service" : "blob",
-#           "resourceName" : "outbound"
-#         }
-#       ],
-#       "hasSshPassword" : true,
-#       "sshAuthorizedKeys" : [
-#         for k in data.azurerm_key_vault_secret.sftp_user_keys : {
-#           "description" : k.name,
-#           "key" : k.value
-#         }
-#       ],
-#       "homeDirectory" : "outbound"
-#     }
-#   })
-# }
+resource "azapi_resource" "add_local_user" {
+  type      = "Microsoft.Storage/storageAccounts/localUsers@2021-09-01"
+  name      = data.azurerm_key_vault_secret.sftp_user_name.value
+  parent_id = module.sftp_storage.storageaccount_id
+
+  body = jsonencode({
+    properties = {
+      "permissionScopes" : [
+        {
+          "permissions" : "rwdcl",
+          "service" : "blob",
+          "resourceName" : "outbound"
+        }
+      ],
+      "hasSshPassword" : true,
+      "sshAuthorizedKeys" : [
+        for k in data.azurerm_key_vault_secret.sftp_user_keys : {
+          "description" : k.name,
+          "key" : k.value
+        }
+      ],
+      "homeDirectory" : "outbound"
+    }
+  })
+}
