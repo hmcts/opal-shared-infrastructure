@@ -65,7 +65,7 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
   home_directory       = "outbound"
 
   ssh_authorized_key {
-         description = data.azurerm_key_vault_secret.sftp_user_key.name,
+         description = data.azurerm_key_vault_secret.sftp_user_key.name
          key = data.azurerm_key_vault_secret.sftp_user_key.value
   }
 
