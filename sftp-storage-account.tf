@@ -55,7 +55,7 @@ data "azurerm_key_vault_secret" "sftp_user_key" {
 
 resource "azurerm_storage_account_local_user" "sftp_local_user" {
   name                 = data.azurerm_key_vault_secret.sftp_user_name.value
-  storage_account_id   = azurerm_storage_account.sftp_storage.id
+  storage_account_id   = module.sftp_storage.storageaccount_id
   ssh_key_enabled      = true
   ssh_password_enabled = true
   home_directory       = "outbound"
