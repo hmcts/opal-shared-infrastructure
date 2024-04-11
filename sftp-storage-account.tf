@@ -21,7 +21,6 @@ module "sftp_storage" {
   enable_hns               = "true"
   enable_sftp              = "true"
 
-  managed_identity_object_id = var.sftp_access_AAD_objectId
   role_assignments = [
     "Storage Blob Data Contributor"
   ]
