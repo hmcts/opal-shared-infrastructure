@@ -29,7 +29,6 @@ module "sftp_storage" {
   private_endpoint_subnet_id       = data.azurerm_subnet.private_endpoints.id
   private_endpoint_rg_name         = local.private_endpoint_rg_name
 
-  team_name    = "Opal Team"
   team_contact = "#opal"
   common_tags  = var.common_tags
 }
