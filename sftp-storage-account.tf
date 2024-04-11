@@ -33,7 +33,7 @@ module "sftp_storage" {
 
 resource "azurerm_storage_container" "sftp_container" {
   name                  = "outbound"
-  storage_account_name  = module.sftp_storage.storage_account_name
+  storage_account_name  = "opal-sftp${var.env}"
   container_access_type = "private"
 }
 
@@ -49,7 +49,7 @@ data "azurerm_key_vault_secret" "sftp_user_name" {
 }
 
 data "azurerm_key_vault_secret" "sftp_user_key" {
-  name         = "sftp_user_key"
+  name         = "sftp-user-pub-key"
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
