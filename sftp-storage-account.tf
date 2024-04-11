@@ -21,9 +21,9 @@ module "sftp_storage" {
   enable_hns               = "true"
   enable_sftp              = "true"
 
-  role_assignments = [
-    "Storage Blob Data Contributor"
-  ]
+#   role_assignments = [
+#     "Storage Blob Data Contributor"
+#   ]
 
   private_endpoint_subnet_id       = data.azurerm_subnet.private_endpoints.id
 
