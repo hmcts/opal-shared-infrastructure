@@ -12,7 +12,7 @@ data "azurerm_subnet" "private_endpoints" {
 module "sftp_storage" {
   source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=master"
   env                      = var.env
-  storage_account_name     = "opal-sftp${var.env}"
+  storage_account_name     = "opalsftp${var.env}"
   resource_group_name      = azurerm_resource_group.opal_resource_group.name
   location                 = azurerm_resource_group.opal_resource_group.location
   account_kind             = "StorageV2"
@@ -33,7 +33,7 @@ module "sftp_storage" {
 
 resource "azurerm_storage_container" "sftp_container" {
   name                  = "outbound"
-  storage_account_name  = "opal-sftp${var.env}"
+  storage_account_name  = "opalsftp${var.env}"
   container_access_type = "private"
 }
 
