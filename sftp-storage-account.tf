@@ -25,9 +25,7 @@ module "sftp_storage" {
     "Storage Blob Data Contributor"
   ]
 
-  private_endpoint_subscription_id = var.aks_subscription_id
   private_endpoint_subnet_id       = data.azurerm_subnet.private_endpoints.id
-  private_endpoint_rg_name         = local.private_endpoint_rg_name
 
   team_contact = "#opal"
   common_tags  = var.common_tags
