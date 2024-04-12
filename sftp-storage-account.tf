@@ -25,6 +25,10 @@ module "sftp_storage" {
     {
       name        = "outbound"
       access_type = "private"
+    },
+    {
+      name        = "inbound"
+      access_type = "private"
     }
   ]
 
@@ -76,7 +80,7 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
       delete = each.value.permissions.delete
     }
     service       = "blob"
-    resource_name = "outbound"
+    resource_name = "${each.key}"
   }
 }
 
