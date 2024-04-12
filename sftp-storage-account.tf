@@ -23,8 +23,8 @@ module "sftp_storage" {
 
   containers = [
     {
-      name                  = "outbound"
-      container_access_type = "private"
+      name        = "outbound"
+      access_type = "private"
     }
   ]
 
