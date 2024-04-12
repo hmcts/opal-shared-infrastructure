@@ -40,16 +40,6 @@ resource "tls_private_key" "sftp_user_key" {
   rsa_bits  = 4096
 }
 
-resource "random_password" "sftp_user_password" {
-  for_each         = var.sftp_users
-  length           = 16
-  special          = true
-  override_special = "#$%&@()_[]{}<>:?"
-  min_upper        = 1
-  min_lower        = 1
-  min_numeric      = 1
-}
-
 resource "azurerm_key_vault_secret" "sftp_user_private_key" {
   for_each     = var.sftp_users
   name         = "${each.key}-private-key"
@@ -64,13 +54,6 @@ resource "azurerm_key_vault_secret" "sftp_user_public_key" {
   value        = tls_private_key.sftp_user_key[each.key].public_key_openssh
 }
 
-resource "azurerm_key_vault_secret" "sftp_user_password" {
-  for_each     = var.sftp_users
-  name         = "${each.key}-password"
-  key_vault_id = module.opal_key_vault.key_vault_id
-  value        = random_password.sftp_user_password[each.key].result
-}
-
 resource "azurerm_storage_account_local_user" "sftp_local_user" {
   for_each             = var.sftp_users
   name                 = each.key
@@ -80,8 +63,8 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
   home_directory       = each.value.home_directory
 
   ssh_authorized_key {
-    description = data.azurerm_key_vault_secret.sftp_user_key.name
-    key         = data.azurerm_key_vault_secret.sftp_user_key.value
+    description = "SFTP User Public Key"
+    key         = tls_private_key.sftp_user_key[each.key].public_key_openssh
   }
 
   permission_scope {
@@ -95,4 +78,11 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
     service       = "blob"
     resource_name = "outbound"
   }
+}
+
+resource "azurerm_key_vault_secret" "sftp_user_password" {
+  for_each     = var.sftp_users
+  name         = "${each.key}-password"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = azurerm_storage_account_local_user.sftp_local_user[each.key].password
 }
