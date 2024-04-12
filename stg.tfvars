@@ -1,1 +1,12 @@
-sftp_allowed_key_secrets = ["sftp-user-pub-key"]
+sftp_users = {
+  outbound = {
+    home_directory = "outbound"
+    permissions = {
+      read   = true
+      create = true
+      list   = true
+      write  = true
+      delete = true
+    }
+  }
+}

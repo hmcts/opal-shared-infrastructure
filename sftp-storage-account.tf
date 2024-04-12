@@ -21,86 +21,78 @@ module "sftp_storage" {
   enable_hns               = "true"
   enable_sftp              = "true"
 
-#   role_assignments = [
-#     "Storage Blob Data Contributor"
-#   ]
+  containers = [
+    {
+      name                  = "outbound"
+      container_access_type = "private"
+    }
+  ]
 
-  private_endpoint_subnet_id       = data.azurerm_subnet.private_endpoints.id
+  private_endpoint_subnet_id = data.azurerm_subnet.private_endpoints.id
 
   team_contact = "#opal"
   common_tags  = var.common_tags
 }
 
-resource "azurerm_storage_container" "sftp_container" {
-  name                  = "outbound"
-  storage_account_name  = "opalsftp${var.env}"
-  container_access_type = "private"
+resource "tls_private_key" "sftp_user_key" {
+  for_each  = var.sftp_users
+  algorithm = "RSA"
+  rsa_bits  = 4096
 }
 
-data "azurerm_key_vault_secret" "sftp_user_keys" {
-  for_each     = toset(var.sftp_allowed_key_secrets)
-  name         = each.value #"sftp-user-pub-key"
-  key_vault_id = module.opal_key_vault.key_vault_id
+resource "random_password" "sftp_user_password" {
+  for_each         = var.sftp_users
+  length           = 16
+  special          = true
+  override_special = "#$%&@()_[]{}<>:?"
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
 }
 
-data "azurerm_key_vault_secret" "sftp_user_name" {
-  name         = "sftp-user-name"
+resource "azurerm_key_vault_secret" "sftp_user_private_key" {
+  for_each     = var.sftp_users
+  name         = "${each.key}-private-key"
   key_vault_id = module.opal_key_vault.key_vault_id
+  value        = tls_private_key.sftp_user_key[each.key].private_key_openssh
 }
 
-data "azurerm_key_vault_secret" "sftp_user_key" {
-  name         = "sftp-user-pub-key"
+resource "azurerm_key_vault_secret" "sftp_user_public_key" {
+  for_each     = var.sftp_users
+  name         = "${each.key}-public-key"
   key_vault_id = module.opal_key_vault.key_vault_id
+  value        = tls_private_key.sftp_user_key[each.key].public_key_openssh
+}
+
+resource "azurerm_key_vault_secret" "sftp_user_password" {
+  for_each     = var.sftp_users
+  name         = "${each.key}-password"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = random_password.sftp_user_password[each.key].result
 }
 
 resource "azurerm_storage_account_local_user" "sftp_local_user" {
-  name                 = data.azurerm_key_vault_secret.sftp_user_name.value
+  for_each             = var.sftp_users
+  name                 = each.key
   storage_account_id   = module.sftp_storage.storageaccount_id
   ssh_key_enabled      = true
   ssh_password_enabled = true
-  home_directory       = "outbound"
+  home_directory       = each.value.home_directory
 
   ssh_authorized_key {
-         description = data.azurerm_key_vault_secret.sftp_user_key.name
-         key = data.azurerm_key_vault_secret.sftp_user_key.value
+    description = data.azurerm_key_vault_secret.sftp_user_key.name
+    key         = data.azurerm_key_vault_secret.sftp_user_key.value
   }
 
   permission_scope {
     permissions {
-      read   = true
-      create = true
-      list = true
-      write = true
-      delete = true
+      read   = each.value.permissions.read
+      create = each.value.permissions.create
+      list   = each.value.permissions.list
+      write  = each.value.permissions.write
+      delete = each.value.permissions.delete
     }
     service       = "blob"
-    resource_name = azurerm_storage_container.sftp_container.name
+    resource_name = "outbound"
   }
 }
-
-#TODO: Replace this API call with azurerm_storage_account_local_user resource
-# resource "azapi_resource" "add_local_user" {
-#   type      = "Microsoft.Storage/storageAccounts/localUsers@2021-09-01"
-#   name      = data.azurerm_key_vault_secret.sftp_user_name.value
-#   parent_id = module.sftp_storage.storageaccount_id
-#
-#   body = jsonencode({
-#     properties = {
-#       "permissionScopes" : [
-#         {
-#           "permissions" : "rwdcl",
-#           "service" : "blob",
-#           "resourceName" : "outbound"
-#         }
-#       ],
-#       "hasSshPassword" : true,
-#       "sshAuthorizedKeys" : [
-#         for k in data.azurerm_key_vault_secret.sftp_user_keys : {
-#           "description" : k.name,
-#           "key" : k.value
-#         }
-#       ],
-#       "homeDirectory" : "outbound"
-#     }
-#   })
-# }

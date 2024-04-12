@@ -24,14 +24,16 @@ variable "businessArea" {
 
 variable "aks_subscription_id" {}
 
-variable "sftp_allowed_key_secrets" {
-  description = "A list of names of public keys in the vault to allow access to"
-  type        = list(string)
-  default     = []
-}
+variable "sftp_users" {
+  type = map(object({
+    home_directory = optional(string, "outbound")
+    permissions = object({
+      read   = optional(bool, true)
+      create = optional(bool, true)
+      list   = optional(bool, true)
+      write  = optional(bool, true)
+      delete = optional(bool, true)
+    })
 
-variable "sftp_allowed_sa_subnets" {
-  description = "Subnets allowed to access storage account"
-  type        = list(string)
-  default     = []
+  }))
 }
