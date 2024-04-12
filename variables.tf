@@ -34,7 +34,7 @@ variable "sftp_users" {
       write  = optional(bool, true)
       delete = optional(bool, true)
     })
-  })
+  }))
   description = "Map of SFTP users to create in the storage account."
   default     = {}
 }
