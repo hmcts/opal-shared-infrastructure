@@ -34,17 +34,7 @@ variable "sftp_users" {
       write  = optional(bool, true)
       delete = optional(bool, true)
     })
-  }),
-  object({
-      home_directory = optional(string, "inbound")
-      permissions = object({
-        read   = optional(bool, true)
-        create = optional(bool, true)
-        list   = optional(bool, true)
-        write  = optional(bool, true)
-        delete = optional(bool, true)
-      })
-    }))
+  })
   description = "Map of SFTP users to create in the storage account."
   default     = {}
 }
