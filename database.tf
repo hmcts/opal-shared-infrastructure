@@ -7,7 +7,7 @@ provider "azurerm" {
 
 module "postgresql_flexible" {
   providers = {
-    azurerm.postgres_network = azurerm.postgres_network
+    azurerm.postgres_network = azurerm
   }
 
   source        = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
