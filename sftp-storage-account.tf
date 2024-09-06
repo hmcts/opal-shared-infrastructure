@@ -80,7 +80,7 @@ resource "azurerm_storage_account_local_user" "sftp_local_user" {
       delete = each.value.permissions.delete
     }
     service       = "blob"
-    resource_name = "${each.key}"
+    resource_name = each.key
   }
 }
 
