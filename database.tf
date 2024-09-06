@@ -26,7 +26,7 @@ module "postgresql_flexible" {
     },
     {
       name : local.db_user_name
-    }
+    },
     {
       name : local.db_maintenance_name
     }
