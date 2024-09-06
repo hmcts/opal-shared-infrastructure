@@ -19,7 +19,7 @@ module "postgresql_flexible" {
   collation     = "en_US.utf8"
 
   admin_user_object_id = var.jenkins_AAD_objectId
-  
+
   pgsql_databases = [
     {
       name : local.db_fines_name
@@ -31,7 +31,7 @@ module "postgresql_flexible" {
       name : local.db_maintenance_name
     }
   ]
-  
+
   pgsql_server_configuration = [
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
