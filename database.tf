@@ -32,24 +32,24 @@ module "postgresql_flexible" {
     }
   ]
 
-  pgsql_server_configuration = [
-    {
-      name  = "azure.enable_temp_tablespaces_on_local_ssd"
-      value = "off"
-    },
-    {
-      name  = "azure.extensions"
-      value = "PG_STAT_STATEMENTS"
-    },
-    {
-      name  = "logfiles.download_enable"
-      value = "ON"
-    },
-    {
-      name  = "logfiles.retention_days"
-      value = "7"
-    }
-  ]
+#  pgsql_server_configuration = [
+#    {
+#      name  = "azure.enable_temp_tablespaces_on_local_ssd"
+#      value = "off"
+#    },
+#    {
+#      name  = "azure.extensions"
+#      value = "PG_STAT_STATEMENTS"
+#    },
+#    {
+#      name  = "logfiles.download_enable"
+#      value = "ON"
+#    },
+#    {
+#      name  = "logfiles.retention_days"
+#      value = "7"
+#    }
+#  ]
 
   pgsql_version = "16"
 }
