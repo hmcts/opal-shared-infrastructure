@@ -3,6 +3,7 @@ module "opal_redis" {
   product                       = var.product
   location                      = "UK South"
   env                           = var.env
+  name                          = "opal-redis-stg"
   common_tags                   = var.common_tags
   redis_version                 = "6"
   business_area                 = "sds"
