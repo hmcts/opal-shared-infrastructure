@@ -53,13 +53,13 @@ module "opal_postgresql" {
     azurerm.postgres_network = azurerm
   }
 
-  source        = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
-  env           = var.env
-  product       = var.product
-  component     = var.component
-  business_area = "sds"
-  common_tags   = var.common_tags
-  collation     = "en_US.utf8"
+  source               = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  env                  = var.env
+  product              = var.product
+  component            = var.component
+  business_area        = "sds"
+  common_tags          = var.common_tags
+  collation            = "en_US.utf8"
   admin_user_object_id = var.jenkins_AAD_objectId
   pgsql_databases = [
     {
