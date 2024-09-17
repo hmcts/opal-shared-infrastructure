@@ -11,3 +11,4 @@ module "opal_key_vault" {
 
   common_tags = var.common_tags
 }
+
