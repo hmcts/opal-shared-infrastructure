@@ -5,6 +5,8 @@ provider "azurerm" {
   subscription_id            = var.aks_subscription_id
 }
 
+data "azurerm_subscription" "opal" {}
+
 module "opal_postgresql" {
   providers = {
     azurerm.postgres_network = azurerm
@@ -17,9 +19,7 @@ module "opal_postgresql" {
   business_area = "sds"
   common_tags   = var.common_tags
   collation     = "en_US.utf8"
-
   admin_user_object_id = var.jenkins_AAD_objectId
-
   pgsql_databases = [
     {
       name : local.db_fines_name
@@ -31,7 +31,6 @@ module "opal_postgresql" {
       name : local.db_maintenance_name
     }
   ]
-
   pgsql_server_configuration = [
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
