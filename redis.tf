@@ -6,6 +6,7 @@ module "opal_redis" {
   name                          = "opal-redis-stg"
   common_tags                   = var.common_tags
   redis_version                 = "6"
+  sku_name                      = "Basic"
   business_area                 = "sds"
   private_endpoint_enabled      = true
   public_network_access_enabled = false
