@@ -3,18 +3,18 @@ module "opal_redis" {
   product                       = var.product
   location                      = "UK South"
   env                           = var.env
-  name                          = "opal-redis-stg"
   common_tags                   = var.common_tags
   redis_version                 = "6"
-  sku_name                      = "Basic"
+  sku_name                      = var.sku_name
+  family                        = var.family
+  capacity                      = var.capacity
   business_area                 = "sds"
   private_endpoint_enabled      = true
   public_network_access_enabled = false
-  resource_group_name           = azurerm_resource_group.opal_resource_group.name
 }
 
-resource "azurerm_key_vault_secret" "redis_connection_string" {
-  name         = "redis-connection-string"
-  value        = "rediss://:${urlencode(module.opal_redis.access_key)}@${module.opal_redis.host_name}:${module.opal_redis.redis_port}?tls=true"
-  key_vault_id = module.opal_key_vault.key_vault_id
+resource "azurerm_key_vault_secret" "redis_access_key" {
+  name         = "redis-access-key"
+  value        = module.redis-activity-service.access_key
+  key_vault_id = data.azurerm_key_vault.vault_id
 }
