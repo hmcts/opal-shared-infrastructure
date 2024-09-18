@@ -15,6 +15,6 @@ module "opal_redis" {
 
 resource "azurerm_key_vault_secret" "redis_access_key" {
   name         = "redis-access-key"
-  value        = module.redis-activity-service.access_key
-  key_vault_id = data.azurerm_key_vault.vault_id
+  value        = module.opal_redis.access_key
+  key_vault_id = data.opal_key_vault.vault_id
 }
