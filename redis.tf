@@ -1,3 +1,6 @@
+# Commenting out Redis configuration as already in Staging
+
+/*
 module "opal_redis" {
   source                        = "git@github.com:hmcts/cnp-module-redis?ref=master"
   product                       = var.product
@@ -18,3 +21,4 @@ resource "azurerm_key_vault_secret" "redis_access_key" {
   value        = module.opal_redis.access_key
   key_vault_id = data.opal_key_vault.vault_id
 }
+*/
