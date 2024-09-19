@@ -54,6 +54,7 @@ module "opal_postgresql" {
   }
 
   source               = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  name                 = "opal-db"
   env                  = var.env
   product              = var.product
   component            = var.component
