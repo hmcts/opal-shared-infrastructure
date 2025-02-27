@@ -10,7 +10,7 @@ data "azurerm_subnet" "private_endpoints" {
 }
 
 module "sftp_storage" {
-  source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=master"
+  source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
   env                      = var.env
   storage_account_name     = "opalsftp${var.env}"
   resource_group_name      = azurerm_resource_group.opal_resource_group.name
