@@ -53,3 +53,7 @@ variable "sftp_users" {
   description = "Map of SFTP users to create in the storage account."
   default     = {}
 }
+
+variable "developers_group" {
+  default = "DTS SDS Developers"
+}
