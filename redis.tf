@@ -2,7 +2,7 @@
 
 /*
 module "opal_redis" {
-  source                        = "git@github.com:hmcts/cnp-module-redis?ref=master"
+  source                        = "git@github.com:hmcts/cnp-module-redis?ref=4.x"
   product                       = var.product
   location                      = "UK South"
   env                           = var.env
