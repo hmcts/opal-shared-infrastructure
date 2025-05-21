@@ -7,45 +7,40 @@ provider "azurerm" {
 
 data "azurerm_subscription" "opal" {}
 
-data "azurerm_key_vault" "key_vault" {
-  name                = "${var.product}-${var.env}"
-  resource_group_name = "${var.product}-${var.env}"
-}
-
 resource "azurerm_key_vault_secret" "POSTGRES-USER" {
   name         = "${var.component}-POSTGRES-USER"
   value        = module.opal_postgresql.username
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-PASS" {
   name         = "${var.component}-POSTGRES-PASS"
   value        = module.opal_postgresql.password
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
   name         = "${var.component}-POSTGRES-HOST"
   value        = module.opal_postgresql.fqdn
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
   name         = "${var.component}-POSTGRES-PORT"
   value        = 5432
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_FINES_DATABASE" {
   name         = "${var.component}-POSTGRES-FINES-DATABASE"
   value        = local.db_fines_name
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_USER_DATABASE" {
   name         = "${var.component}-POSTGRES-USER-DATABASE"
   value        = local.db_user_name
-  key_vault_id = data.azurerm_key_vault.key_vault.id
+  key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 module "opal_postgresql" {
