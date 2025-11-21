@@ -9,7 +9,6 @@ module "servicebus-namespace" {
   env                     = var.env
   common_tags             = var.common_tags
   sku                     = var.service_bus_sku
-  enable_private_endpoint = var.servicebus_enable_private_endpoint
   project                 = var.businessArea
 }
 

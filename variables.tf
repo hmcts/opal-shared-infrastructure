@@ -60,6 +60,3 @@ variable "developers_group" {
 variable "service_bus_sku" {
   default = "Standard"
 }
-variable "servicebus_enable_private_endpoint" {
-  default = false
-}
