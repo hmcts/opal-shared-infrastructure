@@ -2,14 +2,14 @@ module "servicebus-namespace" {
   providers = {
     azurerm.private_endpoint = azurerm.private_endpoint
   }
-  source                  = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=4.x"
-  name                    = "${var.product}-${var.component}"
-  resource_group_name     = azurerm_resource_group.opal_resource_group.name
-  location                = var.location
-  env                     = var.env
-  common_tags             = var.common_tags
-  sku                     = var.service_bus_sku
-  project                 = var.businessArea
+  source              = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=4.x"
+  name                = "${var.product}-${var.component}"
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  location            = var.location
+  env                 = var.env
+  common_tags         = var.common_tags
+  sku                 = var.service_bus_sku
+  project             = var.businessArea
 }
 
 output "sb_primary_send_and_listen_connection_string" {
