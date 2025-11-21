@@ -3,7 +3,7 @@ module "servicebus-namespace" {
     azurerm.private_endpoint = azurerm.private_endpoint
   }
   source              = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=4.x"
-  name                = "${var.product}-${var.component}"
+  name                = "${var.product}-servicebus-${var.env}"
   resource_group_name = azurerm_resource_group.opal_resource_group.name
   location            = var.location
   env                 = var.env
