@@ -1,7 +1,7 @@
 module "servicebus-namespace" {
   source                  = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=4.x"
   name                    = "${var.product}-${var.component}"
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  resource_group_name     = azurerm_resource_group.opal_resource_group.name
   location                = var.location
   env                     = var.env
   common_tags             = var.common_tags
@@ -12,11 +12,11 @@ module "servicebus-namespace" {
 
 
 module "servicebus-queue-logging-pdpl" {
-  source                = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=master"
-  name                  = "logging-pdpl"
-  namespace_name        = module.servicebus-namespace.name
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=master"
+  name                = "logging-pdpl"
+  namespace_name      = module.servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on = [module.servicebus-namespace]
+  depends_on          = [module.servicebus-namespace]
 }
 
 
