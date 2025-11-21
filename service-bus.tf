@@ -13,16 +13,6 @@ module "servicebus-namespace" {
   project                 = var.businessArea
 }
 
-
-module "servicebus-queue-logging-pdpl" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=master"
-  name                = "logging-pdpl"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
-}
-
-
 output "sb_primary_send_and_listen_connection_string" {
   value     = module.servicebus-namespace.primary_send_and_listen_connection_string
   sensitive = true
@@ -43,6 +33,14 @@ resource "azurerm_key_vault_secret" "servicebus_primary_shared_access_key" {
   name         = "servicebus-shared-access-key"
   value        = module.servicebus-namespace.primary_send_and_listen_shared_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+module "servicebus-queue-logging-pdpl" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=master"
+  name                = "logging-pdpl"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-logging-pdpl-queue-name" {
