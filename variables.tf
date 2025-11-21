@@ -57,3 +57,6 @@ variable "sftp_users" {
 variable "developers_group" {
   default = "DTS SDS Developers"
 }
+variable "service_bus_sku" {
+  default = "Standard"
+}

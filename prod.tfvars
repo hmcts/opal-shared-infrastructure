@@ -10,3 +10,4 @@ sftp_users = {
     }
   }
 }
+service_bus_sku = "Premium"
