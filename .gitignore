@@ -9,3 +9,4 @@
 .idea/
 *.iml
 /.project
+/docker-files/.env.shared
