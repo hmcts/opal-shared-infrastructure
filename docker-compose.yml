@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+  opal-db:
+    image: postgres:17.5
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-opal-fines-db}
+      POSTGRES_USER: ${POSTGRES_USER:-opal-db-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opal-db-password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - opal-database-data:/var/lib/postgresql/data
+      - ../opal-shared-infrastructure/docker-files/postgres/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  opal-database-data:
+  redis-data:

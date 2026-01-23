@@ -1,0 +1,31 @@
+services:
+  azure-sb-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    pull_policy: always
+    volumes:
+      - "../opal-shared-infrastructure/docker-files/ServiceBus_Emulator_config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro"
+    ports:
+      - "${SB_AMQP_PORT:-5672}:5672"
+      - "${SB_HTTP_PORT:-5300}:5300"
+    environment:
+      SQL_SERVER: mssql
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-OpalFines!12345}"
+      ACCEPT_EULA: "Y"
+      SQL_WAIT_INTERVAL: 15
+    depends_on:
+      - mssql
+    networks:
+      sb-emulator:
+        aliases: [ "sb-emulator" ]
+
+  mssql:
+    platform: linux/amd64 #Only needed of you are on Apple Silicon
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    networks:
+      sb-emulator:
+        aliases: [ "mssql" ]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-OpalFines!12345}"
+networks:
+  sb-emulator:
