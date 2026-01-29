@@ -6,7 +6,7 @@ services:
     volumes:
       - redis-data:/data
   opal-db:
-    image: postgres:17.5
+    image: postgres:17.7
     restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-opal-fines-db}
