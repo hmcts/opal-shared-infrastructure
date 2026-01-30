@@ -2,5 +2,21 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>hmcts/.github:renovate-config"
-  ]
+  ],
+  "packageRules": [
+    {
+      "description": "Do not update the Docker Postgres image, this is managed by humans.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres"],
+      "enabled": false
+    },
+    {
+      "description": "Do not update the Helm Postgres dependencies, this is managed by humans.",
+      "matchManagers": ["helm"],
+      "matchPackageNames": ["postgresql", "userServicePostgresql"],
+      "enabled": false
+    }
+  ],
+  "description": "Schedule for Wednesdays only.",
+  "schedule": [ "* * * * 3" ]
 }
