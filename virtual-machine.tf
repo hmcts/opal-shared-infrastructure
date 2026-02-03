@@ -49,7 +49,7 @@ module "virtual-machine" {
     azurerm.dcr = azurerm.dcr
   }
 
-  source = "https://github.com/hmcts/terraform-module-virtual-machine?ref=master"
+  source = "git@github.com:hmcts/terraform-module-virtual-machine.git?ref=master"
   count = var.env == "test" ? 2 : 0
   env                  = "test"
   vm_type              = "windows"
