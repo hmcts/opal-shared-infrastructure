@@ -1,5 +1,5 @@
 resource "random_password" "password" {
-  count = var.env == "test" ? 1 : 0
+  count            = var.env == "test" ? 1 : 0
   length           = 16
   special          = true
   min_special      = 1
@@ -10,7 +10,7 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_key_vault_secret" "virtual-machine-password" {
-  count = var.env == "test" ? 1 : 0
+  count        = var.env == "test" ? 1 : 0
   name         = "virtual-machine-password"
   value        = random_password.password[count.index].result
   key_vault_id = module.opal_key_vault.key_vault_id
@@ -49,26 +49,26 @@ module "virtual-machine" {
     azurerm.dcr = azurerm.dcr
   }
 
-  source = "git@github.com:hmcts/terraform-module-virtual-machine.git?ref=master"
-  count = var.env == "test" ? 2 : 0
-  env                  = "test"
-  vm_type              = "windows"
-  vm_name              = "opal-perf-test-vm-${count.index}"
-  vm_resource_group    = azurerm_resource_group.opal_resource_group.name
-  vm_admin_password    = random_password.password[0].result
-  vm_subnet_id         = data.azurerm_subnet.iaas_private_endpoints.id
+  source            = "git@github.com:hmcts/terraform-module-virtual-machine.git?ref=master"
+  count             = var.env == "test" ? 2 : 0
+  env               = "test"
+  vm_type           = "windows"
+  vm_name           = "opal-perf-test-vm-${count.index}"
+  vm_resource_group = azurerm_resource_group.opal_resource_group.name
+  vm_admin_password = random_password.password[0].result
+  vm_subnet_id      = data.azurerm_subnet.iaas_private_endpoints.id
 
-  vm_publisher_name    = "microsoftwindowsdesktop"
-  vm_offer             = "windows-11"
-  vm_sku               = "win11-25h2-pro"
+  vm_publisher_name = "microsoftwindowsdesktop"
+  vm_offer          = "windows-11"
+  vm_sku            = "win11-25h2-pro"
 
-  vm_size              = "D2ds_v5"
-  vm_version           = "latest"
+  vm_size    = "D2ds_v5"
+  vm_version = "latest"
 
   nessus_install             = false
   install_splunk_uf          = false
   install_dynatrace_oneagent = false
   install_azure_monitor      = false
 
-  tags                 = var.common_tags
+  tags = var.common_tags
 }
