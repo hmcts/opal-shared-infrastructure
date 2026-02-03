@@ -62,8 +62,8 @@ module "virtual-machine" {
   vm_offer          = "windows-11"
   vm_sku            = "win11-25h2-pro"
 
-  vm_size    = "D2ds_v5"
-  vm_version = "latest"
+  vm_size              = "D2ds_v5"
+  vm_version           = "latest"
   vm_availabilty_zones = "1"
 
   nessus_install             = false
