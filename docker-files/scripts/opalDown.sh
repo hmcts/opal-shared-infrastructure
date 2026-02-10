@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../"
+if [ -z "$BASE_DIR" ]; then
+  BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../"
+fi
 RESET=false
+
 
 usage() {
   cat <<'USAGE'
