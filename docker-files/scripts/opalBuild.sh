@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(cd "${SCRIPT_DIR}/../../../" && pwd)"
+if [ -z "$BASE_DIR" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  BASE_DIR="$(cd "${SCRIPT_DIR}/../../../" && pwd)"
+fi
 
 MODE="localBranches"
 SKIP_UPDATE=false
