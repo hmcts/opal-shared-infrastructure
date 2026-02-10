@@ -69,7 +69,7 @@ Run this command, it will make the files in `~/bin` available to your terminal.
 echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
 ```
 
-The following will ensure `~/bin` exists and install the scripts to tht location.
+The following will ensure `~/bin` exists and install the scripts to that location.
 ```bash
 mkdir -p "$HOME/bin"
 
