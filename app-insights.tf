@@ -7,7 +7,8 @@ module "application_insights" {
   location            = azurerm_resource_group.opal_resource_group.location
   resource_group_name = azurerm_resource_group.opal_resource_group.name
 
-  common_tags = var.common_tags
+  common_tags         = var.common_tags
+  sampling_percentage = 100
 }
 
 moved {
