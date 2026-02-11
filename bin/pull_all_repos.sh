@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="$(cd "${SCRIPT_DIR}/../../" && pwd)/TMP"
+BASE_DIR="$(cd "${SCRIPT_DIR}/../../" && pwd)"
 
 REPOS=(
   opal-fines-service
