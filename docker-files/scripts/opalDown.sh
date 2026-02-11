@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -z "$BASE_DIR" ]; then
+if [ -z "${BASE_DIR:-}" ]; then
   BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../"
 fi
 RESET=false
