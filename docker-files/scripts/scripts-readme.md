@@ -38,6 +38,48 @@ Examples:
 ./scripts/opalDown.sh -r
 ```
 
+## opalFinesRebuild
+
+Stops and removes only the `opal-fines-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```
+./scripts/opalFinesRebuild.sh
+./scripts/opalFinesRebuild.sh --branch my-feature
+./scripts/opalFinesRebuild.sh --keep-image
+./scripts/opalFinesRebuild.sh --skip-gradle
+```
+
+## opalUserRebuild
+
+Stops and removes only the `opal-user-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```
+./scripts/opalUserRebuild.sh
+./scripts/opalUserRebuild.sh --branch my-feature
+./scripts/opalUserRebuild.sh --keep-image
+./scripts/opalUserRebuild.sh --skip-gradle
+```
+
+## opalLoggingRebuild
+
+Stops and removes only the `opal-logging-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```
+./scripts/opalLoggingRebuild.sh
+./scripts/opalLoggingRebuild.sh --branch my-feature
+./scripts/opalLoggingRebuild.sh --keep-image
+./scripts/opalLoggingRebuild.sh --skip-gradle
+```
+
 ## Install as commands
 If you would like to be able to run these commands from any terminal, you can do the following.
 
