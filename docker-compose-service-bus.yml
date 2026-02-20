@@ -20,7 +20,7 @@ services:
 
   mssql:
     platform: linux/amd64 #Only needed of you are on Apple Silicon
-    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    image: "mcr.microsoft.com/mssql/server:2025-latest"
     networks:
       sb-emulator:
         aliases: [ "mssql" ]
