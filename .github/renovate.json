@@ -11,6 +11,12 @@
       "enabled": false
     },
     {
+      "description": "Do not update the Docker MS SQL Server image, this is managed by humans.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["mcr.microsoft.com/mssql/server"],
+      "enabled": false
+    },
+    {
       "description": "Do not update the Helm Postgres dependencies, this is managed by humans.",
       "matchManagers": ["helm"],
       "matchPackageNames": ["postgresql", "userServicePostgresql"],
