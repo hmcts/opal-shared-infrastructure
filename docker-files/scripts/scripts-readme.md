@@ -13,18 +13,19 @@ Pulls all required repositories that you do not currently have checked out into 
 
 Builds the Opal docker stack from the directory opal-shared-infrastructure is stored in.
 
-It defaults to using
-`-localBranches`, which fetches/pulls the current branch in each repo, runs Gradle builds, and then
-builds and starts the containers. Use `-localMaster` (`-lm`) to checkout `master` first. Use
-`-c`/`--current` to skip git updates and Gradle builds.
+You need to specify what `git` operation to perform : `-localBranches`, which fetches/pulls 
+the current branch in each repo; `-localMaster` (`-lm`) to check out `master` first; 
+`-c`/`-current` to skip any git operations.
+
+The script will then `./gradlew clean assemble` each repository (unless you specify 
+`--skipClean` or `-sc`), before building the docker images and then starting the stack.
 
 Examples:
 
 ```
-./scripts/opalBuild.sh
 ./scripts/opalBuild.sh -lb
 ./scripts/opalBuild.sh -lm
-./scripts/opalBuild.sh -c
+./scripts/opalBuild.sh -c -sc
 ```
 
 ## opalDown
