@@ -10,3 +10,7 @@
 *.iml
 /.project
 /docker-files/.env.shared
+
+# OS generated files
+**/.DS_Store
+
