@@ -4,7 +4,7 @@
   az aks get-credentials --resource-group ss-sbox-01-rg --name ss-sbox-01-aks --subscription DTS-SHAREDSERVICES-SBOX --overwrite-existing
 
   # Dev
-  az aks get-credentials --resource-group ss-dev-01-rg --name ss-dev-01-aks --subscription DTS-SHAREDSERVICES-DEV --overwrite-existing
+  az aks get-credentials --resource-group ss-dev-00-rg --name ss-dev-00-aks --subscription DTS-SHAREDSERVICES-DEV --overwrite-existing
 
   # Staging
   az aks get-credentials --resource-group ss-stg-00-rg --name ss-stg-00-aks --subscription DTS-SHAREDSERVICES-STG --overwrite-existing

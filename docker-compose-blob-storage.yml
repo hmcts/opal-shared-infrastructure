@@ -1,0 +1,14 @@
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    ports:
+      - "${AZURITE_PORT:-10000}:10000"
+    volumes:
+      - ./azurite-data:/data
+    command: "azurite-blob --loose --blobHost 0.0.0.0 --skipApiVersionCheck"
+    networks:
+      storage-emulator:
+        aliases: [ "storage-emulator"]
+networks:
+  storage-emulator:
