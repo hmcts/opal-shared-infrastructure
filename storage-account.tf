@@ -11,7 +11,7 @@ module "opal_storage" {
 
   containers = [
     {
-      name        = "role_mapping"
+      name        = "rolemapping"
       access_type = "private"
     },
     {
