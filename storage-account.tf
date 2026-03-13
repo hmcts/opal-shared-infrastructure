@@ -2,7 +2,7 @@ module "opal_storage" {
   source = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
 
   env                      = var.env
-  storage_account_name     = "opal${var.env}"
+  storage_account_name     = "opalstorageaccount${var.env}"
   resource_group_name      = azurerm_resource_group.opal_resource_group.name
   location                 = azurerm_resource_group.opal_resource_group.location
   account_kind             = "StorageV2"
