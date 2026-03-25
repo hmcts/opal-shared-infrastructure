@@ -6,6 +6,8 @@ if [ -z "${BASE_DIR:-}" ]; then
   BASE_DIR="$(cd "${SCRIPT_DIR}/../../../" && pwd)"
 fi
 
+az acr login --name hmctsprod --subscription DCD-CNP-Prod
+
 MODE=""
 SKIP_UPDATE=false
 SKIP_CLEAN=false
