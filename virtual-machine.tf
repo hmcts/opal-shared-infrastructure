@@ -58,11 +58,11 @@ module "virtual-machine" {
   vm_admin_password = random_password.password[0].result
   vm_subnet_id      = data.azurerm_subnet.iaas_private_endpoints.id
 
-  vm_publisher_name = "microsoftwindowsdesktop"
-  vm_offer          = "windows-11"
-  vm_sku            = "win11-25h2-pro"
+  vm_publisher_name = "MicrosoftWindowsServer"
+  vm_offer          = "WindowsServer"
+  vm_sku            = "2022-datacenter-azure-edition"
 
-  vm_size              = "D2ds_v5"
+  vm_size              = "Standard_D2ds_v5"
   vm_version           = "latest"
   vm_availabilty_zones = "1"
 
