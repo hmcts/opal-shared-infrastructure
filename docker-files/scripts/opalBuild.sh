@@ -6,7 +6,23 @@ if [ -z "${BASE_DIR:-}" ]; then
   BASE_DIR="$(cd "${SCRIPT_DIR}/../../../" && pwd)"
 fi
 
-az acr login --name hmctsprod --subscription DCD-CNP-Prod
+acr_login() {
+  local registry_name="hmctsprod"
+  local subscription_name="DCD-CNP-Prod"
+  local login_output
+
+  if login_output="$(az acr login --name "$registry_name" --subscription "$subscription_name" 2>&1)"; then
+    return 0
+  fi
+
+  echo "$login_output" >&2
+  echo >&2
+  echo "ACR login failed for $registry_name in $subscription_name." >&2
+  echo "Ensure ZScaler Internet Security is Off" >&2
+  exit 1
+}
+
+acr_login
 
 MODE=""
 SKIP_UPDATE=false
