@@ -43,6 +43,30 @@ resource "azurerm_key_vault_secret" "POSTGRES_USER_DATABASE" {
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
+resource "azurerm_key_vault_secret" "POSTGRES_MAINTENANCE_DATABASE" {
+  name         = "${var.component}-POSTGRES-MAINTENANCE-DATABASE"
+  value        = local.db_maintenance_name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+resource "azurerm_key_vault_secret" "POSTGRES_LOGGING_DATABASE" {
+  name         = "${var.component}-POSTGRES-LOGGING-DATABASE"
+  value        = local.db_logging_name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+resource "azurerm_key_vault_secret" "POSTGRES_LOG_AUDIT_DATABASE" {
+  name         = "${var.component}-POSTGRES-LOG-AUDIT-DATABASE"
+  value        = local.db_log_audit_name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+resource "azurerm_key_vault_secret" "POSTGRES_FILE_HANDLER_DATABASE" {
+  name         = "${var.component}-POSTGRES-FILE-HANDLER-DATABASE"
+  value        = local.db_file_handler_name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
 module "opal_postgresql" {
   providers = {
     azurerm.postgres_network = azurerm
@@ -66,6 +90,15 @@ module "opal_postgresql" {
     },
     {
       name : local.db_maintenance_name
+    },
+    {
+      name : local.db_logging_name
+    },
+    {
+      name : local.db_log_audit_name
+    },
+    {
+      name : local.db_file_handler_name
     }
   ]
   pgsql_server_configuration = [
