@@ -9,6 +9,8 @@
 # passwords.
 
 locals {
+  legacy_postgresql_imports_enabled = contains(keys(local.legacy_postgresql_server_ids_by_env), var.env)
+
   legacy_postgresql_imports = {
     for key, server in local.legacy_postgresql_servers : key => {
       component           = server.component
@@ -70,14 +72,42 @@ import {
 }
 
 data "azurerm_key_vault_secret" "legacy_POSTGRES_PASS" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   name         = "${each.value.component}-POSTGRES-PASS"
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
+data "azurerm_key_vault_secret" "legacy_POSTGRES_USER" {
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
+
+  name         = "${each.value.component}-POSTGRES-USER"
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+data "azurerm_key_vault_secret" "legacy_POSTGRES_HOST" {
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
+
+  name         = "${each.value.component}-POSTGRES-HOST"
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+data "azurerm_key_vault_secret" "legacy_POSTGRES_PORT" {
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
+
+  name         = "${each.value.component}-POSTGRES-PORT"
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+data "azurerm_key_vault_secret" "legacy_POSTGRES_DATABASE" {
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
+
+  name         = "${each.value.component}-POSTGRES-DATABASE"
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = module.legacy_postgresql[each.key].random_password.password
   id = data.azurerm_key_vault_secret.legacy_POSTGRES_PASS[each.key].value
@@ -98,36 +128,36 @@ import {
 }
 
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = azurerm_key_vault_secret.legacy_POSTGRES_USER[each.key]
-  id = "https://${var.product}-${var.env}.vault.azure.net/secrets/${each.value.component}-POSTGRES-USER"
+  id = data.azurerm_key_vault_secret.legacy_POSTGRES_USER[each.key].id
 }
 
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = azurerm_key_vault_secret.legacy_POSTGRES_PASS[each.key]
-  id = "https://${var.product}-${var.env}.vault.azure.net/secrets/${each.value.component}-POSTGRES-PASS"
+  id = data.azurerm_key_vault_secret.legacy_POSTGRES_PASS[each.key].id
 }
 
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = azurerm_key_vault_secret.legacy_POSTGRES_HOST[each.key]
-  id = "https://${var.product}-${var.env}.vault.azure.net/secrets/${each.value.component}-POSTGRES-HOST"
+  id = data.azurerm_key_vault_secret.legacy_POSTGRES_HOST[each.key].id
 }
 
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = azurerm_key_vault_secret.legacy_POSTGRES_PORT[each.key]
-  id = "https://${var.product}-${var.env}.vault.azure.net/secrets/${each.value.component}-POSTGRES-PORT"
+  id = data.azurerm_key_vault_secret.legacy_POSTGRES_PORT[each.key].id
 }
 
 import {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
 
   to = azurerm_key_vault_secret.legacy_POSTGRES_DATABASE[each.key]
-  id = "https://${var.product}-${var.env}.vault.azure.net/secrets/${each.value.component}-POSTGRES-DATABASE"
+  id = data.azurerm_key_vault_secret.legacy_POSTGRES_DATABASE[each.key].id
 }
