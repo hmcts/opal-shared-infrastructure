@@ -3,10 +3,13 @@
 #
 # These imports intentionally target the legacy_postgresql module definitions.
 # They should be run before removing DB infrastructure from individual service
-# repos. The random_password import requires the current admin passwords to be
-# read from the existing Key Vault POSTGRES-PASS secrets so the imported servers
-# do not get planned password rotations without committing or passing clear-text
-# passwords.
+# repos.
+#
+# Do not import module.legacy_postgresql[*].random_password.password here.
+# The random provider cannot import module override_special metadata, so an
+# import block causes a forced random_password replacement in the first plan.
+# If preserving existing admin passwords is mandatory, move the random_password
+# state from each source app repo into these module addresses before apply.
 
 locals {
   legacy_postgresql_imports_enabled = contains(keys(local.legacy_postgresql_server_ids_by_env), var.env)
@@ -104,13 +107,6 @@ data "azurerm_key_vault_secret" "legacy_POSTGRES_DATABASE" {
 
   name         = "${each.value.component}-POSTGRES-DATABASE"
   key_vault_id = module.opal_key_vault.key_vault_id
-}
-
-import {
-  for_each = local.legacy_postgresql_imports_enabled ? local.legacy_postgresql_servers : {}
-
-  to = module.legacy_postgresql[each.key].random_password.password
-  id = data.azurerm_key_vault_secret.legacy_POSTGRES_PASS[each.key].value
 }
 
 import {
