@@ -39,9 +39,12 @@ locals {
           }
         ],
         var.env == "stg" ? [
-          {
-            name = "gctest"
-          },
+          # gctest currently exists with en_US.utf8 collation while the
+          # fines-service server module uses en_GB.utf8 for its databases.
+          # The upstream module exposes collation per module/server rather
+          # than per database, so adopting gctest here would force a database
+          # replacement. Leave it unmanaged until the module supports per-DB
+          # collation or the database can safely be normalised.
           {
             name = "test-gob-fines-db"
           },
