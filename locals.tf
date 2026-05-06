@@ -7,11 +7,6 @@ locals {
   db_file_handler_name = "psql-${var.product}-file-db"
   db_port              = 5432
 
-  postgresql_private_dns_zone_id = "/subscriptions/1baf5470-1c3e-40d3-a6f7-74bfbce4b348/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/private.postgres.database.azure.com"
-
-  legacy_postgresql_platform_admin_group   = length(regexall(".*(prod).*", var.env)) > 0 ? "DTS Platform Operations PostgreSQL Admin Access SC" : "DTS Platform Operations PostgreSQL Admin Access"
-  legacy_postgresql_high_availability_envs = ["ptl", "perftest", "stg", "aat", "prod", "test"]
-
   legacy_postgresql_default_server_configuration = [
     {
       name  = "backslash_quote"
@@ -30,11 +25,6 @@ locals {
     }
   ]
 
-  legacy_postgresql_default_database = {
-    charset   = "UTF8"
-    collation = "en_GB.utf8"
-  }
-
   legacy_postgresql_all_servers = {
     "fines-service" = {
       component     = "fines-service"
@@ -50,8 +40,7 @@ locals {
         ],
         var.env == "stg" ? [
           {
-            name      = "gctest"
-            collation = "en_US.utf8"
+            name = "gctest"
           },
           {
             name = "test-gob-fines-db"
@@ -154,45 +143,10 @@ locals {
 
   legacy_postgresql_servers = {
     for key, server in local.legacy_postgresql_all_servers : key => merge(server, {
-      server_id             = try(local.legacy_postgresql_server_ids_by_env[var.env][key], null)
-      resource_group_name   = split("/", try(local.legacy_postgresql_server_ids_by_env[var.env][key], ""))[4]
-      server_name           = split("/", try(local.legacy_postgresql_server_ids_by_env[var.env][key], ""))[8]
-      location              = "uksouth"
-      delegated_subnet_id   = "/subscriptions/${split("/", try(local.legacy_postgresql_server_ids_by_env[var.env][key], ""))[2]}/resourceGroups/ss-${var.env}-network-rg/providers/Microsoft.Network/virtualNetworks/ss-${var.env}-vnet/subnets/postgresql"
-      pgsql_admin_username  = "pgadmin"
-      pgsql_storage_mb      = 65536
-      pgsql_storage_tier    = "P6"
-      pgsql_sku             = "GP_Standard_D2s_v3"
-      auto_grow_enabled     = false
-      backup_retention_days = 35
-      geo_redundant_backups = false
-      high_availability     = contains(local.legacy_postgresql_high_availability_envs, var.env)
+      server_id = try(local.legacy_postgresql_server_ids_by_env[var.env][key], null)
     })
     if contains(server.enabled_envs, var.env) && try(local.legacy_postgresql_server_ids_by_env[var.env][key], null) != null
   }
-
-  legacy_postgresql_database_resources = length(local.legacy_postgresql_servers) == 0 ? {} : merge([
-    for server_key, server in local.legacy_postgresql_servers : {
-      for database in server.pgsql_databases : "${server_key}/${database.name}" => {
-        server_key = server_key
-        name       = database.name
-        collation  = coalesce(try(database.collation, null), server.collation, local.legacy_postgresql_default_database.collation)
-        charset    = coalesce(try(database.charset, null), local.legacy_postgresql_default_database.charset)
-        id         = "${server.server_id}/databases/${database.name}"
-      }
-    }
-  ]...)
-
-  legacy_postgresql_configuration_resources = length(local.legacy_postgresql_servers) == 0 ? {} : merge([
-    for server_key, server in local.legacy_postgresql_servers : {
-      for configuration in server.pgsql_server_configuration : "${server_key}/${configuration.name}" => {
-        server_key = server_key
-        name       = configuration.name
-        value      = configuration.value
-        id         = "${server.server_id}/configurations/${configuration.name}"
-      }
-    }
-  ]...)
 
   consolidated_postgresql_enabled = contains(["demo", "ithc"], var.env)
 
