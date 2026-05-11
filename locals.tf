@@ -29,7 +29,7 @@ locals {
     "fines-service" = {
       component     = "fines-service"
       db_name       = "opal-fines-db"
-      enabled_envs  = ["demo", "ithc", "test", "stg"]
+      enabled_envs  = ["demo", "ithc", "perftest", "test", "stg"]
       collation     = null
       pgsql_version = "15"
       pgsql_databases = concat(
@@ -59,7 +59,7 @@ locals {
     "user-service" = {
       component                  = "user-service"
       db_name                    = "opal-user-db"
-      enabled_envs               = ["demo", "ithc", "test", "stg"]
+      enabled_envs               = ["demo", "ithc", "perftest", "test", "stg"]
       collation                  = "en_US.utf8"
       pgsql_version              = "16"
       pgsql_databases            = [{ name = "opal-user-db" }]
@@ -89,7 +89,7 @@ locals {
     "file-handler" = {
       component                  = "file-handler"
       db_name                    = "opal-file-db"
-      enabled_envs               = ["demo", "test", "stg"]
+      enabled_envs               = ["demo", "perftest", "test", "stg"]
       collation                  = "en_US.utf8"
       pgsql_version              = "16"
       pgsql_databases            = [{ name = "opal-file-db" }]
@@ -127,6 +127,11 @@ locals {
     ithc = {
       "fines-service" = "/subscriptions/ba71a911-e0d6-4776-a1a6-079af1df7139/resourceGroups/opal-fines-service-data-ithc/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-ithc"
       "user-service"  = "/subscriptions/ba71a911-e0d6-4776-a1a6-079af1df7139/resourceGroups/opal-user-service-data-ithc/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-ithc"
+    }
+    perftest = {
+      "fines-service" = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-fines-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-test"
+      "user-service"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-user-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-test"
+      "file-handler"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-file-handler-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-test"
     }
     test = {
       "fines-service" = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-fines-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-test"
