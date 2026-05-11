@@ -14,6 +14,16 @@
 locals {
   legacy_postgresql_imports_enabled = contains(keys(local.legacy_postgresql_server_ids_by_env), var.env)
 
+  legacy_postgresql_platform_admin_group_object_ids_by_env = {
+    demo     = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
+    ithc     = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
+    perftest = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
+    test     = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
+    stg      = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
+  }
+
+  legacy_postgresql_platform_admin_group_object_id = var.legacy_postgresql_platform_admin_group_object_id != "" ? var.legacy_postgresql_platform_admin_group_object_id : try(local.legacy_postgresql_platform_admin_group_object_ids_by_env[var.env], "")
+
   legacy_postgresql_imports = {
     for key, server in local.legacy_postgresql_servers : key => {
       component           = server.component
@@ -110,10 +120,10 @@ data "azurerm_key_vault_secret" "legacy_POSTGRES_DATABASE" {
 }
 
 import {
-  for_each = var.legacy_postgresql_platform_admin_group_object_id == "" ? {} : local.legacy_postgresql_imports
+  for_each = local.legacy_postgresql_platform_admin_group_object_id == "" ? {} : local.legacy_postgresql_imports
 
   to = module.legacy_postgresql[each.key].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_adadmin
-  id = "${each.value.server_id}/administrators/${var.legacy_postgresql_platform_admin_group_object_id}"
+  id = "${each.value.server_id}/administrators/${local.legacy_postgresql_platform_admin_group_object_id}"
 }
 
 import {
