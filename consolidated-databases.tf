@@ -35,7 +35,7 @@ module "opal_consolidated_postgresql" {
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_USER" {
   count = local.consolidated_postgresql_enabled ? 1 : 0
 
-  name         = "${var.component}-CONSOLIDATED-POSTGRES-USER"
+  name         = "${var.product}-CONSOLIDATED-POSTGRES-USER"
   value        = module.opal_consolidated_postgresql[0].username
   key_vault_id = module.opal_key_vault.key_vault_id
 }
@@ -43,7 +43,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_USER" {
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PASS" {
   count = local.consolidated_postgresql_enabled ? 1 : 0
 
-  name         = "${var.component}-CONSOLIDATED-POSTGRES-PASS"
+  name         = "${var.product}-CONSOLIDATED-POSTGRES-PASS"
   value        = module.opal_consolidated_postgresql[0].password
   key_vault_id = module.opal_key_vault.key_vault_id
 }
@@ -51,7 +51,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PASS" {
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_HOST" {
   count = local.consolidated_postgresql_enabled ? 1 : 0
 
-  name         = "${var.component}-CONSOLIDATED-POSTGRES-HOST"
+  name         = "${var.product}-CONSOLIDATED-POSTGRES-HOST"
   value        = module.opal_consolidated_postgresql[0].fqdn
   key_vault_id = module.opal_key_vault.key_vault_id
 }
@@ -59,7 +59,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_HOST" {
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PORT" {
   count = local.consolidated_postgresql_enabled ? 1 : 0
 
-  name         = "${var.component}-CONSOLIDATED-POSTGRES-PORT"
+  name         = "${var.product}-CONSOLIDATED-POSTGRES-PORT"
   value        = local.db_port
   key_vault_id = module.opal_key_vault.key_vault_id
 }
@@ -67,7 +67,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PORT" {
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_DATABASES" {
   for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
 
-  name         = "${var.component}-CONSOLIDATED-POSTGRES-${each.key}-DATABASE"
+  name         = "${var.product}-CONSOLIDATED-POSTGRES-${replace(each.key, "_", "-")}-DATABASE"
   value        = each.value
   key_vault_id = module.opal_key_vault.key_vault_id
 }
