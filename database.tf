@@ -79,7 +79,7 @@ module "opal_postgresql" {
   component            = var.component
   business_area        = "sds"
   common_tags          = var.common_tags
-  collation            = "en_US.utf8"
+  collation            = "en_GB.utf8"
   admin_user_object_id = var.jenkins_AAD_objectId
   pgsql_databases = [
     {
@@ -120,6 +120,6 @@ module "opal_postgresql" {
     }
   ]
 
-  pgsql_version = "16"
+  pgsql_version = "17"
 }
 

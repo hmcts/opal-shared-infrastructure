@@ -30,8 +30,8 @@ locals {
       component     = "fines-service"
       db_name       = "opal-fines-db"
       enabled_envs  = ["demo", "ithc", "perftest", "test", "stg"]
-      collation     = null
-      pgsql_version = "15"
+      collation     = "en_GB.utf8"
+      pgsql_version = "17"
       pgsql_databases = concat(
         [
           {
@@ -60,8 +60,8 @@ locals {
       component                  = "user-service"
       db_name                    = "opal-user-db"
       enabled_envs               = ["demo", "ithc", "perftest", "test", "stg"]
-      collation                  = "en_US.utf8"
-      pgsql_version              = "16"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-user-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -70,8 +70,8 @@ locals {
       component                  = "logging-service"
       db_name                    = "opal-logging-db"
       enabled_envs               = ["stg"]
-      collation                  = null
-      pgsql_version              = "15"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-logging-db" }]
       pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
     }
@@ -80,8 +80,8 @@ locals {
       component                  = "log-audit-service"
       db_name                    = "opal-log-audit-db"
       enabled_envs               = ["stg"]
-      collation                  = null
-      pgsql_version              = "15"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-log-audit-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -90,8 +90,8 @@ locals {
       component                  = "file-handler"
       db_name                    = "opal-file-db"
       enabled_envs               = ["demo", "perftest", "test", "stg"]
-      collation                  = "en_US.utf8"
-      pgsql_version              = "16"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-file-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -100,8 +100,8 @@ locals {
       component                  = "maintenance-service"
       db_name                    = "opal-maintenance-db"
       enabled_envs               = ["demo", "stg"]
-      collation                  = "en_US.utf8"
-      pgsql_version              = "16"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-maintenance-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -110,8 +110,8 @@ locals {
       component                  = "print-service"
       db_name                    = "opal-print-db"
       enabled_envs               = ["stg"]
-      collation                  = null
-      pgsql_version              = "15"
+      collation                  = "en_GB.utf8"
+      pgsql_version              = "17"
       pgsql_databases            = [{ name = "opal-print-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
