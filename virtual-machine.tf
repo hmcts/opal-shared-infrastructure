@@ -68,6 +68,7 @@ module "virtual-machine" {
 
   nessus_install             = false
   install_splunk_uf          = false
+  remove_splunk_uf           = false
   install_dynatrace_oneagent = false
   install_azure_monitor      = false
 
