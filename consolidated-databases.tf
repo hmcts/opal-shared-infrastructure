@@ -19,7 +19,7 @@ module "opal_consolidated_postgresql" {
   component            = var.component
   business_area        = "sds"
   common_tags          = var.common_tags
-  collation            = "en_US.utf8"
+  collation            = "en_GB.utf8"
   admin_user_object_id = var.jenkins_AAD_objectId
 
   pgsql_databases = [
@@ -29,7 +29,7 @@ module "opal_consolidated_postgresql" {
   ]
 
   pgsql_server_configuration = local.consolidated_postgresql_server_configuration
-  pgsql_version              = "16"
+  pgsql_version              = "17"
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_USER" {
