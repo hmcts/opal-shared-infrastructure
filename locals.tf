@@ -168,6 +168,12 @@ locals {
     PRINT        = "opal-print-db"
   }
 
+  service_keyvault_databases_prefix = {
+    FINES   = "fines-service"
+    USER    = "user-service"
+    LOGGING = "logging-service"
+  }
+
   consolidated_postgresql_server_configuration = [
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
