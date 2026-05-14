@@ -169,9 +169,9 @@ locals {
   }
 
   service_keyvault_databases_prefix = {
-    FINES        = "fines-service"
-    USER         = "user-service"
-    LOGGING      = "logging-service"
+    FINES   = "fines-service"
+    USER    = "user-service"
+    LOGGING = "logging-service"
   }
 
   consolidated_postgresql_server_configuration = [
