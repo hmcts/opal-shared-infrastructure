@@ -144,7 +144,7 @@ locals {
       "fines-service"       = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-fines-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-stg"
       "user-service"        = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-user-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-stg"
       "file-handler"        = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-file-handler-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-stg"
-      "maintenance-service" = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-maintenance-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-maintenance-service-stg"
+      # "maintenance-service" = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-maintenance-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-maintenance-service-stg"
       "logging-service"     = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-logging-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-logging-service-stg"
       "log-audit-service"   = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-log-audit-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-log-audit-service-stg"
       "print-service"       = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-print-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-print-service-stg"
