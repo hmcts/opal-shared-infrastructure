@@ -27,6 +27,12 @@ locals {
     }
   ]
 
+  postgresql_all_servers = {
+    for name, config in local.legacy_postgresql_all_servers :
+    name => config
+    if contains(config.enabled_envs, var.env)
+  }
+
   legacy_postgresql_all_servers = {
     "fines-service" = {
       component     = "fines-service"
@@ -119,55 +125,11 @@ locals {
     }
   }
 
-  legacy_postgresql_server_ids_by_env = {
-    demo = {
-      "fines-service"       = "/subscriptions/c68a4bed-4c3d-4956-af51-4ae164c1957c/resourceGroups/opal-fines-service-data-demo/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-demo"
-      "user-service"        = "/subscriptions/c68a4bed-4c3d-4956-af51-4ae164c1957c/resourceGroups/opal-user-service-data-demo/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-demo"
-      "file-handler"        = "/subscriptions/c68a4bed-4c3d-4956-af51-4ae164c1957c/resourceGroups/opal-file-handler-data-demo/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-demo"
-      "maintenance-service" = "/subscriptions/c68a4bed-4c3d-4956-af51-4ae164c1957c/resourceGroups/opal-maintenance-service-data-demo/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-maintenance-service-demo"
-    }
-    ithc = {
-      "fines-service" = "/subscriptions/ba71a911-e0d6-4776-a1a6-079af1df7139/resourceGroups/opal-fines-service-data-ithc/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-ithc"
-      "user-service"  = "/subscriptions/ba71a911-e0d6-4776-a1a6-079af1df7139/resourceGroups/opal-user-service-data-ithc/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-ithc"
-    }
-    perftest = {
-      "fines-service" = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-fines-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-test"
-      "user-service"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-user-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-test"
-      "file-handler"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-file-handler-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-test"
-    }
-    test = {
-      "fines-service" = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-fines-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-test"
-      "user-service"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-user-service-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-test"
-      "file-handler"  = "/subscriptions/3eec5bde-7feb-4566-bfb6-805df6e10b90/resourceGroups/opal-file-handler-data-test/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-test"
-    }
-    stg = {
-      "fines-service"       = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-fines-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-fines-service-stg"
-      "user-service"        = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-user-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-user-service-stg"
-      "file-handler"        = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-file-handler-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-file-handler-stg"
-      # "maintenance-service" = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-maintenance-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-maintenance-service-stg"
-      "logging-service"     = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-logging-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-logging-service-stg"
-      "log-audit-service"   = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-log-audit-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-log-audit-service-stg"
-      "print-service"       = "/subscriptions/74dacd4f-a248-45bb-a2f0-af700dc4cf68/resourceGroups/opal-print-service-data-stg/providers/Microsoft.DBforPostgreSQL/flexibleServers/opal-print-service-stg"
-    }
-  }
-
-  legacy_postgresql_servers = {
-    for key, server in local.legacy_postgresql_all_servers : key => merge(server, {
-      server_id = try(local.legacy_postgresql_server_ids_by_env[var.env][key], null)
-    })
-    if contains(server.enabled_envs, var.env) && try(local.legacy_postgresql_server_ids_by_env[var.env][key], null) != null
-  }
-
   consolidated_postgresql_enabled = contains(["demo", "ithc"], var.env)
 
   consolidated_postgresql_databases = {
-    FINES        = "opal-fines-db"
-    USER         = "opal-user-db"
-    MAINTENANCE  = "opal-maintenance-db"
-    LOGGING      = "opal-logging-db"
-    LOG_AUDIT    = "opal-log-audit-db"
-    FILE_HANDLER = "opal-file-db"
-    PRINT        = "opal-print-db"
+    for _, v in local.legacy_postgresql_all_servers :
+    upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => v.db_name
   }
 
   consolidated_postgresql_legacy_secret_cutover_keys = local.consolidated_postgresql_enabled ? toset([
