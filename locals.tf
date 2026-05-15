@@ -168,11 +168,14 @@ locals {
     PRINT        = "opal-print-db"
   }
 
-  service_keyvault_databases_prefix = {
-    FINES   = "fines-service"
-    USER    = "user-service"
+  consolidated_postgresql_legacy_secret_cutover_keys = local.consolidated_postgresql_enabled ? toset([
+    "fines-service",
+    "user-service",
+  ]) : toset([])
+
+  service_keyvault_databases_prefix = local.consolidated_postgresql_enabled ? {
     LOGGING = "logging-service"
-  }
+  } : {}
 
   consolidated_postgresql_server_configuration = [
     {
