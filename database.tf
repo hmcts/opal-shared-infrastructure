@@ -120,5 +120,5 @@ module "opal_postgresql" {
       value = "7"
     }
   ]
-}
 
+}
