@@ -79,9 +79,9 @@ module "opal_postgresql" {
   component            = var.component
   business_area        = "sds"
   common_tags          = var.common_tags
-  collation            = var.env == "test" ? "en_GB.utf8" : "en_US.utf8"
+  collation            = local.db_collation
+  pgsql_version        = local.db_version
   admin_user_object_id = var.jenkins_AAD_objectId
-  pgsql_version        = var.env == "test" ? "17" : "16"
   pgsql_databases = [
     {
       name : local.db_fines_name
