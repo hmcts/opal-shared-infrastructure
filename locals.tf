@@ -60,7 +60,7 @@ locals {
       component                  = "user-service"
       db_name                    = "opal-user-db"
       enabled_envs               = ["demo", "ithc", "perftest", "test", "stg"]
-      collation                  = "en_US.utf8"
+      collation                  = var.env == "perftest" || var.env == "test" ? "en_GB.utf8" : "en_US.utf8"
       pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "16"
       pgsql_databases            = [{ name = "opal-user-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
