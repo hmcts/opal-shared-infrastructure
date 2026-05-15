@@ -61,7 +61,7 @@ locals {
       db_name                    = "opal-user-db"
       enabled_envs               = ["demo", "ithc", "perftest", "test", "stg"]
       collation                  = "en_US.utf8"
-      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "15"
+      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "16"
       pgsql_databases            = [{ name = "opal-user-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -91,7 +91,7 @@ locals {
       db_name                    = "opal-file-db"
       enabled_envs               = ["demo", "perftest", "test", "stg"]
       collation                  = var.env == "perftest" || var.env == "test" ? "en_GB.utf8" : "en_US.utf8"
-      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "15"
+      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "16"
       pgsql_databases            = [{ name = "opal-file-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
@@ -101,7 +101,7 @@ locals {
       db_name                    = "opal-maintenance-db"
       enabled_envs               = ["demo", "stg"]
       collation                  = var.env == "perftest" || var.env == "test" ? "en_GB.utf8" : "en_US.utf8"
-      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "15"
+      pgsql_version              = var.env == "perftest" || var.env == "test" ? "17" : "16"
       pgsql_databases            = [{ name = "opal-maintenance-db" }]
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
