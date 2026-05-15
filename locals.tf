@@ -1,7 +1,7 @@
 locals {
-  db_port              = 5432
-  db_version           = 17
-  db_collation         = "en_GB.utf8"
+  db_port      = 5432
+  db_version   = 17
+  db_collation = "en_GB.utf8"
 
   postgresql_default_server_configuration = [
     {
