@@ -6,7 +6,8 @@
 # Key Vault secret names remain unchanged.
 
 module "env_specific_postgresql" {
-  for_each = local.legacy_postgresql_all_servers
+  # TODO replace with postgresql_all_enabed_servers once database cut over is complete
+  for_each = local.postgresql_all_servers
 
   providers = {
     azurerm.postgres_network = azurerm
@@ -28,31 +29,31 @@ module "env_specific_postgresql" {
 }
 
 resource "azurerm_key_vault_secret" "env_specific_POSTGRES_USER" {
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-USER"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].username : module.env_specific_postgresql[each.key].username
+  value        = module.env_specific_postgresql[each.key].username
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "env_specific_POSTGRES_PASS" {
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-PASS"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].password : module.env_specific_postgresql[each.key].password
+  value        = module.env_specific_postgresql[each.key].password
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "env_specific_POSTGRES_HOST" {
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-HOST"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].fqdn : module.env_specific_postgresql[each.key].fqdn
+  value        = module.env_specific_postgresql[each.key].fqdn
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "env_specific_POSTGRES_PORT" {
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-PORT"
   value        = local.db_port
@@ -60,7 +61,7 @@ resource "azurerm_key_vault_secret" "env_specific_POSTGRES_PORT" {
 }
 
 resource "azurerm_key_vault_secret" "env_specific_POSTGRES_DATABASE" {
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-DATABASE"
   value        = each.value.db_name

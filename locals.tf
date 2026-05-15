@@ -3,14 +3,14 @@ locals {
   db_version           = 17
   db_collation         = "en_GB.utf8"
 
-  legacy_postgresql_default_server_configuration = [
+  postgresql_default_server_configuration = [
     {
       name  = "backslash_quote"
       value = "on"
     }
   ]
 
-  legacy_postgresql_fdw_server_configuration = [
+  postgresql_fdw_server_configuration = [
     {
       name  = "azure.extensions"
       value = "POSTGRES_FDW"
@@ -21,13 +21,13 @@ locals {
     }
   ]
 
-  postgresql_all_servers = {
-    for name, config in local.legacy_postgresql_all_servers :
+  postgresql_all_enabed_servers = {
+    for name, config in local.postgresql_all_servers :
     name => config
     if contains(config.enabled_envs, var.env)
   }
 
-  legacy_postgresql_all_servers = {
+  postgresql_all_servers = {
     "fines-service" = {
       component     = "fines-service"
       db_name       = "opal-fines-db"
@@ -55,7 +55,7 @@ locals {
           }
         ] : []
       )
-      pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
+      pgsql_server_configuration = local.postgresql_fdw_server_configuration
     }
 
     "user-service" = {
@@ -65,7 +65,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-user-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = local.postgresql_default_server_configuration
     }
 
     "logging-service" = {
@@ -75,7 +75,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-logging-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
+      pgsql_server_configuration = local.postgresql_fdw_server_configuration
     }
 
     "log-audit-service" = {
@@ -85,7 +85,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-log-audit-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = local.postgresql_default_server_configuration
     }
 
     "file-handler" = {
@@ -95,7 +95,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-file-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = local.postgresql_default_server_configuration
     }
 
     "maintenance-service" = {
@@ -105,7 +105,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-maintenance-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = local.postgresql_default_server_configuration
     }
 
     "print-service" = {
@@ -115,21 +115,16 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-print-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = local.postgresql_default_server_configuration
     }
   }
 
   consolidated_postgresql_enabled = contains(["demo", "ithc"], var.env)
 
   consolidated_postgresql_databases = {
-    for _, v in local.legacy_postgresql_all_servers :
+    for _, v in local.postgresql_all_servers :
     upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => v.db_name
   }
-
-  consolidated_postgresql_legacy_secret_cutover_keys = local.consolidated_postgresql_enabled ? toset([
-    "fines-service",
-    "user-service",
-  ]) : toset([])
 
   service_keyvault_databases_prefix = local.consolidated_postgresql_enabled ? {
     LOGGING = "logging-service"
