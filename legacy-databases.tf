@@ -18,13 +18,13 @@ module "legacy_postgresql" {
   product              = var.product
   component            = each.value.component
   business_area        = "sds"
-  collation            = coalesce(each.value.collation, "en_GB.utf8")
+  collation            = local.db_collation
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
 
   pgsql_databases            = each.value.pgsql_databases
   pgsql_server_configuration = each.value.pgsql_server_configuration
-  pgsql_version              = each.value.pgsql_version
+  pgsql_version              = local.db_version
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_USER" {
