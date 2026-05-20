@@ -61,3 +61,17 @@ resource "azurerm_key_vault_secret" "servicebus-queue-report-queue-name" {
   value        = module.servicebus-queue-report.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-process-interface-files" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                = "process-interface-files"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-process-interface-files-queue-name" {
+  name         = "servicebus-process-interface-files-queue-name"
+  value        = module.servicebus-queue-process-interface-files.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
