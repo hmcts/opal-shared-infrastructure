@@ -6,7 +6,7 @@
 # Key Vault secret names remain unchanged.
 
 module "legacy_postgresql" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   providers = {
     azurerm.postgres_network = azurerm
@@ -28,31 +28,31 @@ module "legacy_postgresql" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_USER" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-USER"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].username : module.legacy_postgresql[each.key].username
+  value        = module.legacy_postgresql[each.key].username
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_PASS" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-PASS"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].password : module.legacy_postgresql[each.key].password
+  value        = module.legacy_postgresql[each.key].password
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_HOST" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-HOST"
-  value        = contains(local.consolidated_postgresql_legacy_secret_cutover_keys, each.key) ? module.opal_consolidated_postgresql[0].fqdn : module.legacy_postgresql[each.key].fqdn
+  value        = module.legacy_postgresql[each.key].fqdn
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_PORT" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-PORT"
   value        = local.db_port
@@ -60,7 +60,7 @@ resource "azurerm_key_vault_secret" "legacy_POSTGRES_PORT" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_DATABASE" {
-  for_each = local.legacy_postgresql_servers
+  for_each = local.postgresql_all_enabed_servers
 
   name         = "${each.value.component}-POSTGRES-DATABASE"
   value        = each.value.db_name

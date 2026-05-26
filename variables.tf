@@ -61,9 +61,3 @@ variable "developers_group" {
 variable "service_bus_sku" {
   default = "Standard"
 }
-
-variable "legacy_postgresql_platform_admin_group_object_id" {
-  description = "Optional override for the DTS Platform Operations PostgreSQL Admin Access group object ID used when importing existing legacy PostgreSQL Azure AD admin resources."
-  type        = string
-  default     = ""
-}
