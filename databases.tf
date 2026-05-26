@@ -6,8 +6,7 @@
 # Key Vault secret names remain unchanged.
 
 module "env_specific_postgresql" {
-  # TODO replace with postgresql_all_enabed_servers once database cut over is complete
-  for_each = local.postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   providers = {
     azurerm.postgres_network = azurerm
