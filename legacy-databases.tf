@@ -6,7 +6,7 @@
 # Key Vault secret names remain unchanged.
 
 module "legacy_postgresql" {
-  for_each = local.legacy_postgresql_all_servers
+  for_each = local.postgresql_all_enabed_servers
 
   providers = {
     azurerm.postgres_network = azurerm
