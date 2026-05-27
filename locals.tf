@@ -93,13 +93,18 @@ locals {
     }
 
     "maintenance-service" = {
-      component                  = "maintenance-service"
-      db_name                    = "opal-maintenance-db"
-      enabled_envs               = ["demo", "stg"]
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-maintenance-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      component       = "maintenance-service"
+      db_name         = "opal-maintenance-db"
+      enabled_envs    = ["demo", "stg"]
+      collation       = local.db_collation
+      pgsql_version   = local.db_version
+      pgsql_databases = [{ name = "opal-maintenance-db" }]
+      pgsql_server_configuration = [
+        {
+          name  = "backslash_quote"
+          value = "safe_encoding"
+        }
+      ]
     }
 
     "print-service" = {
