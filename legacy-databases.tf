@@ -6,7 +6,7 @@
 # Key Vault secret names remain unchanged.
 
 module "legacy_postgresql" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   providers = {
     azurerm.postgres_network = azurerm
@@ -28,7 +28,7 @@ module "legacy_postgresql" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_USER" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   name         = "${each.value.component}-POSTGRES-USER"
   value        = module.legacy_postgresql[each.key].username
@@ -36,7 +36,7 @@ resource "azurerm_key_vault_secret" "legacy_POSTGRES_USER" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_PASS" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   name         = "${each.value.component}-POSTGRES-PASS"
   value        = module.legacy_postgresql[each.key].password
@@ -44,7 +44,7 @@ resource "azurerm_key_vault_secret" "legacy_POSTGRES_PASS" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_HOST" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   name         = "${each.value.component}-POSTGRES-HOST"
   value        = module.legacy_postgresql[each.key].fqdn
@@ -52,7 +52,7 @@ resource "azurerm_key_vault_secret" "legacy_POSTGRES_HOST" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_PORT" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   name         = "${each.value.component}-POSTGRES-PORT"
   value        = local.db_port
@@ -60,7 +60,7 @@ resource "azurerm_key_vault_secret" "legacy_POSTGRES_PORT" {
 }
 
 resource "azurerm_key_vault_secret" "legacy_POSTGRES_DATABASE" {
-  for_each = local.postgresql_all_enabed_servers
+  for_each = local.postgresql_all_enabed_servers_none_consolidated
 
   name         = "${each.value.component}-POSTGRES-DATABASE"
   value        = each.value.db_name
