@@ -6,8 +6,8 @@
 # Keep these only for the adoption run, then remove them once the resources are
 # present in this repo's Terraform state.
 #
-# Do not import the maintenance-service database or platform AAD admin here:
-# the STG adoption plan showed those objects do not exist remotely yet, so they
+# Do not import the maintenance-service database or AAD admins here:
+# the STG adoption plans showed those objects do not exist remotely yet, so they
 # should be created by Terraform after the existing server has been imported.
 
 locals {
@@ -31,11 +31,4 @@ import {
 
   to = module.legacy_postgresql[each.key].azurerm_postgresql_flexible_server_configuration.pgsql_server_config[each.value.configuration_name]
   id = "${each.value.server_id}/configurations/${each.value.configuration_name}"
-}
-
-import {
-  for_each = local.maintenance_service_legacy_imports
-
-  to = module.legacy_postgresql[each.key].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_principal_admin[0]
-  id = "${each.value.server_id}/administrators/${var.jenkins_AAD_objectId}"
 }
