@@ -129,7 +129,7 @@ locals {
   postgresql_all_enabed_servers_none_consolidated = {
     for name, config in local.legacy_postgresql_all_servers :
     name => config
-    if local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
+    if !local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
   }
 
   service_keyvault_databases_prefix = local.consolidated_postgresql_enabled ? {
