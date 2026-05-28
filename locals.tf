@@ -2,6 +2,7 @@ locals {
   db_port      = 5432
   db_version   = 17
   db_collation = "en_GB.utf8"
+  default_envs = ["demo", "ithc", "perftest", "test", "stg"]
 
   legacy_postgresql_default_server_configuration = [
     {
@@ -25,7 +26,7 @@ locals {
     "fines-service" = {
       component     = "fines-service"
       db_name       = "opal-fines-db"
-      enabled_envs  = ["demo", "ithc", "perftest", "test", "stg"]
+      enabled_envs  = local.default_envs
       collation     = local.db_collation
       pgsql_version = local.db_version
       pgsql_databases = concat(
@@ -55,7 +56,7 @@ locals {
     "user-service" = {
       component                  = "user-service"
       db_name                    = "opal-user-db"
-      enabled_envs               = ["demo", "ithc", "perftest", "test", "stg"]
+      enabled_envs               = local.default_envs
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-user-db" }]
@@ -65,7 +66,7 @@ locals {
     "logging-service" = {
       component                  = "logging-service"
       db_name                    = "opal-logging-db"
-      enabled_envs               = ["stg", "perftest", "test"]
+      enabled_envs               = local.default_envs
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-logging-db" }]
@@ -85,7 +86,7 @@ locals {
     "file-handler" = {
       component                  = "file-handler"
       db_name                    = "opal-file-db"
-      enabled_envs               = ["demo", "perftest", "test", "stg"]
+      enabled_envs               = local.default_envs
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-file-db" }]
@@ -93,13 +94,18 @@ locals {
     }
 
     "maintenance-service" = {
-      component                  = "maintenance-service"
-      db_name                    = "opal-maintenance-db"
-      enabled_envs               = ["demo", "stg"]
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-maintenance-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      component       = "maintenance-service"
+      db_name         = "opal-maintenance-db"
+      enabled_envs    = ["demo", "stg"]
+      collation       = local.db_collation
+      pgsql_version   = local.db_version
+      pgsql_databases = [{ name = "opal-maintenance-db" }]
+      pgsql_server_configuration = [
+        {
+          name  = "backslash_quote"
+          value = "safe_encoding"
+        }
+      ]
     }
 
     "print-service" = {
@@ -117,18 +123,17 @@ locals {
 
   consolidated_postgresql_databases = {
     for _, v in local.legacy_postgresql_all_servers :
-    upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => v.db_name
+    upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => {
+      component = v.component
+      db_name   = v.db_name
+    }
   }
 
-  postgresql_all_enabed_servers = {
+  postgresql_all_enabed_servers_none_consolidated = {
     for name, config in local.legacy_postgresql_all_servers :
     name => config
-    if contains(config.enabled_envs, var.env)
+    if !local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
   }
-
-  service_keyvault_databases_prefix = local.consolidated_postgresql_enabled ? {
-    LOGGING = "logging-service"
-  } : {}
 
   consolidated_postgresql_server_configuration = [
     {
