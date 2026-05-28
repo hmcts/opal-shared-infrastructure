@@ -132,10 +132,6 @@ locals {
     if !local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
   }
 
-  service_keyvault_databases_prefix = local.consolidated_postgresql_enabled ? {
-    LOGGING = "logging-service"
-  } : {}
-
   consolidated_postgresql_server_configuration = [
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
