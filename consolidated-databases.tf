@@ -24,8 +24,8 @@ module "opal_consolidated_postgresql" {
   admin_user_object_id = var.jenkins_AAD_objectId
 
   pgsql_databases = [
-    for db_name in values(local.consolidated_postgresql_databases) : {
-      name = db_name
+    for db in values(local.consolidated_postgresql_databases) : {
+      name = db["db_name"]
     }
   ]
 
