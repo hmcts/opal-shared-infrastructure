@@ -123,7 +123,10 @@ locals {
 
   consolidated_postgresql_databases = {
     for _, v in local.legacy_postgresql_all_servers :
-    upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => v.db_name
+    upper(replace(replace(replace(v.db_name, "opal-", ""), "-db", ""), "-", "_")) => {
+      component = v.component
+      db_name   = v.db_name
+    }
   }
 
   postgresql_all_enabed_servers_none_consolidated = {
