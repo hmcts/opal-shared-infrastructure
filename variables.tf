@@ -39,20 +39,6 @@ variable "capacity" {
 
 variable "aks_subscription_id" {}
 
-variable "sftp_users" {
-  type = map(object({
-    home_directory = optional(string, "outbound")
-    permissions = object({
-      read   = optional(bool, true)
-      create = optional(bool, true)
-      list   = optional(bool, true)
-      write  = optional(bool, true)
-      delete = optional(bool, true)
-    })
-  }))
-  description = "Map of SFTP users to create in the storage account."
-  default     = {}
-}
 
 variable "developers_group" {
   default = "DTS SDS Developers"
