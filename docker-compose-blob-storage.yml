@@ -8,9 +8,9 @@ services:
       --location /data
       --skipApiVersionCheck
     ports:
-      - "10000:10000"
+      - "${AZURITE_PORT:-10000}:10000"
     volumes:
-      - ./storage-data:/data
+      - ./azurite-data:/data
     networks:
       - storage-emulator
 
