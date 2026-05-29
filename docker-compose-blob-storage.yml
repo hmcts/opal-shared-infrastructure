@@ -1,11 +1,11 @@
 services:
-  azurite:
+  storage-account-roleMapping:
     image: mcr.microsoft.com/azure-storage/azurite
-    container_name: azurite
+    container_name: roleMapping
     ports:
       - "${AZURITE_PORT:-10000}:10000"
     volumes:
-      - ./azurite-data:/data
+      - ./storage-data/roleMapping:/data
     command: "azurite-blob --loose --blobHost 0.0.0.0 --skipApiVersionCheck"
     networks:
       storage-emulator:
