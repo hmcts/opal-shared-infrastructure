@@ -39,20 +39,6 @@ variable "capacity" {
 
 variable "aks_subscription_id" {}
 
-variable "sftp_users" {
-  type = map(object({
-    home_directory = optional(string, "outbound")
-    permissions = object({
-      read   = optional(bool, true)
-      create = optional(bool, true)
-      list   = optional(bool, true)
-      write  = optional(bool, true)
-      delete = optional(bool, true)
-    })
-  }))
-  description = "Map of SFTP users to create in the storage account."
-  default     = {}
-}
 
 variable "developers_group" {
   default = "DTS SDS Developers"
@@ -60,10 +46,4 @@ variable "developers_group" {
 
 variable "service_bus_sku" {
   default = "Standard"
-}
-
-variable "legacy_postgresql_platform_admin_group_object_id" {
-  description = "Optional override for the DTS Platform Operations PostgreSQL Admin Access group object ID used when importing existing legacy PostgreSQL Azure AD admin resources."
-  type        = string
-  default     = ""
 }
