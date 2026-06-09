@@ -4,7 +4,7 @@ set -e
 command -v az >/dev/null 2>&1 || { echo >&2 "❌ This script requires you to have the Azure CLI installed (\`brew install azure-cli\`) but it's not installed. Aborting."; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_FILE="$SCRIPT_DIR/../docker-files/.env.shared111"
+ENV_FILE="$SCRIPT_DIR/../docker-files/.env.shared"
 
 if [ -f "$ENV_FILE" ]; then
   echo "❌ $ENV_FILE already exists. Refusing to overwrite it."
@@ -29,8 +29,7 @@ echo "Writing secrets to $ENV_FILE..."
   echo ""
   echo "# legacy config"
   echo "DEFAULT_APP_MODE=opal"
-  echo "FINES_IS_LEGACY_ENABLED=false"
-  echo "USER_IS_LEGACY_ENABLED=false"
+  echo "IS_LEGACY_MODE=false"
   echo "OPAL_LEGACY_GATEWAY_PASSWORD=$(az keyvault secret show --vault-name opal-stg --name OpalLegacyGatewayPassword | jq -r .value)"
   echo "OPAL_LEGACY_GATEWAY_URL=https://host.docker.internal:4553/opal"
   echo "OPAL_LEGACY_GATEWAY_USERNAME=$(az keyvault secret show --vault-name opal-stg --name OpalLegacyGatewayUsername | jq -r .value)"
