@@ -44,7 +44,7 @@ locals {
 
 module "valcon-servicebus-topic" {
   for_each            = local.valcon_servicebus_topics
-  source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=master"
+  source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
   name                = each.value
   namespace_name      = module.valcon-servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
