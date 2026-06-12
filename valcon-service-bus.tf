@@ -35,7 +35,7 @@ resource "azurerm_key_vault_secret" "valcon-servicebus_primary_shared_access_key
 }
 
 module "valcon-servicebus-topic" {
-  for_each            = var.valcon_servicebus_topic_names
+  for_each            = toset(var.valcon_servicebus_topic_names)
   source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
   name                = each.value
   namespace_name      = module.valcon-servicebus-namespace.name
