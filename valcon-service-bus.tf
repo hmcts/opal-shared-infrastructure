@@ -34,16 +34,26 @@ resource "azurerm_key_vault_secret" "valcon-servicebus_primary_shared_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
-# module "valcon-servicebus-<name>-topic" {
-#   source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=master"
-#   name                = "<name>"
-#   namespace_name      = module.valcon-servicebus-namespace.name
-#   resource_group_name = azurerm_resource_group.opal_resource_group.name
-#   depends_on          = [module.valcon-servicebus-namespace]
-# }
-#
-# resource "azurerm_key_vault_secret" "valcon-servicebus-queue-logging-pdpl-queue-name" {
-#   name         = "valcon-servicebus-<name>-topic-name"
-#   value        = module.valcon-servicebus-<name>-topic.name
-#   key_vault_id = module.opal_key_vault.key_vault_id
-# }
+locals {
+  # Use sanitized keys for Terraform and Key Vault naming while preserving raw topic names.
+  valcon_servicebus_topics = {
+    for topic in var.valcon_servicebus_topic_names :
+    lower(regexreplace(topic, "[^0-9A-Za-z-]", "-")) => topic
+  }
+}
+
+module "valcon-servicebus-topic" {
+  for_each            = local.valcon_servicebus_topics
+  source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=master"
+  name                = each.value
+  namespace_name      = module.valcon-servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.valcon-servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "valcon-servicebus-topic-name" {
+  for_each     = module.valcon-servicebus-topic
+  name         = "valcon-servicebus-${each.key}-topic-name"
+  value        = each.value.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}

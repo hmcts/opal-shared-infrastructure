@@ -47,3 +47,15 @@ variable "developers_group" {
 variable "service_bus_sku" {
   default = "Standard"
 }
+
+variable "valcon_servicebus_topic_names" {
+  description = "List of Valcon Service Bus topic names to create. One Key Vault secret per topic is also created."
+  type        = list(string)
+  default = [
+    "courts",
+    "organisations",
+    "offences",
+    "opal-results",
+    "opal-application-register"
+  ]
+}
