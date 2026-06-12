@@ -62,3 +62,14 @@ variable "redis_capacity" {
   default     = "1"
   description = "The size of the Redis cache to deploy. Valid values are 1, 2, 3, 4, 5"
 }
+variable "valcon_servicebus_topic_names" {
+  description = "List of Valcon Service Bus topic names to create. One Key Vault secret per topic is also created."
+  type        = list(string)
+  default = [
+    "courts",
+    "organisations",
+    "offences",
+    "opal-results",
+    "opal-application-register"
+  ]
+}
