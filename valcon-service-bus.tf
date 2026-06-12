@@ -34,16 +34,8 @@ resource "azurerm_key_vault_secret" "valcon-servicebus_primary_shared_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
-locals {
-  # Use sanitized keys for Terraform and Key Vault naming while preserving raw topic names.
-  valcon_servicebus_topics = {
-    for topic in var.valcon_servicebus_topic_names :
-    lower(regexreplace(topic, "[^0-9A-Za-z-]", "-")) => topic
-  }
-}
-
 module "valcon-servicebus-topic" {
-  for_each            = local.valcon_servicebus_topics
+  for_each            = var.valcon_servicebus_topic_names
   source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
   name                = each.value
   namespace_name      = module.valcon-servicebus-namespace.name
