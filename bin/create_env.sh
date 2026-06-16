@@ -70,7 +70,7 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo "LAUNCH_DARKLY_SDK_KEY=$(az keyvault secret show --vault-name opal-stg --name launch-darkly-sdk-key | jq -r .value)"
   echo ""
   echo "## Opal application configuration"
-  echo "REDIS_CONNECTION_STRING=redis://redis:6379/"
+  echo "REDIS_CONNECTION_STRING=redis://host.docker.internal:6379"
   echo ""
   echo "# legacy config"
   echo "DEFAULT_APP_MODE=opal"
