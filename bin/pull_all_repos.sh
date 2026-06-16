@@ -9,6 +9,8 @@ REPOS=(
   opal-user-service
   opal-logging-service
   opal-shared-infrastructure
+  opal-frontend
+  opal-common-lib
 )
 
 GIT_BASE_URL="https://github.com/hmcts"
