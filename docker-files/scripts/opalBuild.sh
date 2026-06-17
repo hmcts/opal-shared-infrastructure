@@ -27,11 +27,13 @@ acr_login
 MODE=""
 SKIP_UPDATE=false
 SKIP_CLEAN=false
+MAX_PARALLEL="${MAX_PARALLEL:-2}"
+INCLUDE_FRONTEND=false
 
 usage() {
   cat <<'USAGE'
 
-Usage: opalBuild [-localBranches|-lb|-localMaster|-lm|-c|-current] [-skipClean|-sc]
+Usage: opalBuild [-localBranches|-lb|-localMaster|-lm|-c|-current] [-skipClean|-sc] [-j|--jobs <count>] [-frontend|-fe]
 
 Recreate the Opal docker containers with optional git and .gradlew operations in each Opal repository.
 
@@ -39,6 +41,8 @@ Recreate the Opal docker containers with optional git and .gradlew operations in
 -localMaster, -lm: checkout master, then fetch/pull in each repo
 -current, -c: do not fetch/pull or change the current git repository state
 -skipClean, -sc: build the docker compose without first performing a ./gradlew clean assemble
+-j, --jobs: number of Gradle repositories to build in parallel (default: 2, or env MAX_PARALLEL)
+-frontend, -fe: include the frontend repo and frontend docker compose services
 USAGE
 }
 
@@ -46,24 +50,36 @@ option_provided=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -localBranches|-lb) 
-	MODE="localBranches" 
-	option_provided=true	
-	;;
-    -localMaster|-lm) 
-	MODE="localMaster" 
+    -localBranches|-lb)
+	MODE="localBranches"
 	option_provided=true
 	;;
-    -current|-c) 
-	SKIP_UPDATE=true 
+    -localMaster|-lm)
+	MODE="localMaster"
+	option_provided=true
+	;;
+    -current|-c)
+	SKIP_UPDATE=true
 	option_provided=true
 	;;
     -skipClean|-sc)
 	SKIP_CLEAN=true
 	;;
-    -h|--help) 
-	usage 
-	exit 0 
+    -j|--jobs)
+      if [[ $# -lt 2 ]]; then
+        echo "Missing value for $1" >&2
+        usage >&2
+        exit 2
+      fi
+      MAX_PARALLEL="$2"
+      shift
+      ;;
+    -frontend|-fe)
+      INCLUDE_FRONTEND=true
+      ;;
+    -h|--help)
+	usage
+	exit 0
 	;;
     *)
       echo "Unknown option: $1" >&2
@@ -95,6 +111,10 @@ REPOS=(
   opal-shared-infrastructure
 )
 
+if [[ "$INCLUDE_FRONTEND" == "true" ]]; then
+  REPOS+=(opal-frontend)
+fi
+
 for repo in "${REPOS[@]}"; do
   echo "Processing repo: $repo"
   if [[ ! -d "$repo" ]]; then
@@ -117,10 +137,16 @@ GRADLE_REPOS=(
 )
 
 if [[ "$SKIP_CLEAN" == "false" ]]; then
-  for repo in "${GRADLE_REPOS[@]}"; do
+  if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Invalid parallel jobs value: $MAX_PARALLEL (must be a positive integer)" >&2
+    exit 2
+  fi
+
+  printf '%s\0' "${GRADLE_REPOS[@]}" | xargs -0 -n 1 -P "$MAX_PARALLEL" bash -c '
+    repo="$1"
     echo "Processing Building project: $repo"
-    (cd "$repo" && ./gradlew clean assemble)
-  done
+    cd "$repo" && ./gradlew clean assemble
+  ' _
 fi
 
 PROJECT=opal-stack
@@ -133,6 +159,13 @@ COMPOSE_FILES=(
   -f "$BASE_DIR/opal-logging-service/docker-compose.base.yml"
   -f "$BASE_DIR/opal-logging-service/docker-compose.local.yml"
 )
+
+if [[ "$INCLUDE_FRONTEND" == "true" ]]; then
+  COMPOSE_FILES+=(
+    -f "$BASE_DIR/opal-frontend/docker-compose.base.yml"
+    -f "$BASE_DIR/opal-frontend/docker-compose.local.yml"
+  )
+fi
 
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \

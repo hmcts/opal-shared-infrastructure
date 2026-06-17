@@ -5,27 +5,72 @@ command -v az >/dev/null 2>&1 || { echo >&2 "❌ This script requires you to hav
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/../docker-files/.env.shared"
+CLEAN=false
+
+usage() {
+  cat <<'USAGE'
+Usage: create_env.sh [-clean|-c] [-h|--help]
+
+-clean, -c   Delete existing .env.shared (if present) and regenerate it
+-h, --help   Show this help message
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -clean|-c)
+      CLEAN=true
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 if [ -f "$ENV_FILE" ]; then
-  echo "❌ $ENV_FILE already exists. Refusing to overwrite it."
-  exit 1
+  if [[ "$CLEAN" == "true" ]]; then
+    echo "🧹 Removing existing $ENV_FILE"
+    rm -f "$ENV_FILE"
+  else
+    read -r -p "⚠️  $ENV_FILE already exists. Replace it? [y/N]: " REPLY
+    if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+      rm -f "$ENV_FILE"
+    else
+      echo "Skipping. Existing file was not changed."
+      exit 0
+    fi
+  fi
 fi
 
 echo "Fetching secrets from staging key-vault..."
 echo "Writing secrets to $ENV_FILE..."
 
+aad_client_id="$(az keyvault secret show --vault-name opal-stg --name AzureADClientId | jq -r .value)"
+aad_client_secret="$(az keyvault secret show --vault-name opal-stg --name AzureADClientSecret | jq -r .value)"
+aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTenantId | jq -r .value)"
+
 {
   echo "## Azure Credentials"
-  echo "AAD_CLIENT_ID=$(az keyvault secret show --vault-name opal-stg --name AzureADClientId | jq -r .value)"
-  echo "AAD_CLIENT_SECRET=$(az keyvault secret show --vault-name opal-stg --name AzureADClientSecret | jq -r .value)"
-  echo "AAD_TENANT_ID=$(az keyvault secret show --vault-name opal-stg --name AzureADTenantId | jq -r .value)"
+  echo "AAD_CLIENT_ID=$aad_client_id"
+  echo "AZURE_AD_CLIENT_ID=$aad_client_id"
+  echo "AAD_CLIENT_SECRET=$aad_client_secret"
+  echo "AZURE_AD_CLIENT_SECRET=$aad_client_secret"
+  echo "AAD_TENANT_ID=$aad_tenant_id"
+  echo "AZURE_AD_TENANT_ID=$aad_tenant_id"
   echo ""
   echo "## Launch Darkly Credentials"
   echo "LAUNCH_DARKLY_ENABLED=false"
   echo "LAUNCH_DARKLY_SDK_KEY=$(az keyvault secret show --vault-name opal-stg --name launch-darkly-sdk-key | jq -r .value)"
   echo ""
   echo "## Opal application configuration"
-  echo "REDIS_CONNECTION_STRING=redis://redis:6379/"
+  echo "REDIS_CONNECTION_STRING=redis://host.docker.internal:6379"
   echo ""
   echo "# legacy config"
   echo "DEFAULT_APP_MODE=opal"
