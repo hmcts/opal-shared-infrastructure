@@ -1,39 +1,53 @@
-# Commenting out Redis configuration as already in Staging
-module "opal_redis" {
-  source        = "git@github.com:hmcts/cnp-module-redis?ref=master"
-  product       = var.product
-  location      = var.location
-  env           = var.env
-  common_tags   = var.common_tags
-  redis_version = "6"
-  business_area = "sds"
-  sku_name      = var.redis_sku_name
-  family        = var.redis_family
-  capacity      = var.redis_capacity
-
-  private_endpoint_enabled      = true
-  public_network_access_enabled = false
+data "azurerm_subnet" "redis_private_endpoint" {
+  name                 = "core-infra-subnet-2-${var.env}"
+  resource_group_name  = "core-infra-${var.env}"
+  virtual_network_name = "core-infra-vnet-${var.env}"
 }
 
-resource "azurerm_key_vault_secret" "redis_access_key" {
-  name         = "redis-access-key"
-  value        = module.opal_redis.access_key
+module "opal_managed_redis" {
+  source = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
+
+  product     = var.product
+  component   = var.component
+  env         = var.env
+  location    = var.location
+  common_tags = var.common_tags
+
+  # Performance:
+  sku_name = "Balanced_B0"
+
+  # Networking:
+  public_network_access   = "Disabled"
+  create_private_endpoint = true
+  subnet_id               = data.azurerm_subnet.redis_private_endpoint.id
+  private_dns_zone_ids    = ["/subscriptions/${var.private_dns_subscription_id}/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.redis.azure.net"]
+
+  access_keys_authentication_enabled = true
+
+  # Backup (persistence) options:
+  persistence_rdb_backup_frequency = "6h"
+}
+
+
+resource "azurerm_key_vault_secret" "redis_primary_access_key" {
+  name         = "redis-primary-access-key"
+  value        = module.opal_managed_redis.primary_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
-resource "azurerm_key_vault_secret" "redis_host_name" {
-  name         = "redis-host-name"
-  value        = module.opal_redis.host_name
+resource "azurerm_key_vault_secret" "redis_hostname" {
+  name         = "redis-hostname"
+  value        = module.opal_managed_redis.hostname
   key_vault_id = module.opal_key_vault.key_vault_id
 }
-resource "azurerm_key_vault_secret" "redis_redis_port" {
-  name         = "redis-redis-port"
-  value        = module.opal_redis.redis_port
+resource "azurerm_key_vault_secret" "redis_port" {
+  name         = "redis-port"
+  value        = module.opal_managed_redis.port
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "redis_connection_string" {
   name  = "redis-connection-string"
-  value = "rediss://:${urlencode(module.opal_redis.access_key)}@${module.opal_redis.host_name}:${module.opal_redis.redis_port}?tls=true"
+  value = "rediss://:${urlencode(module.opal_managed_redis.primary_access_key)}@${module.opal_managed_redis.hostname}:${module.opal_managed_redis.port}?tls=true"
 
   key_vault_id = module.opal_key_vault.key_vault_id
 }
