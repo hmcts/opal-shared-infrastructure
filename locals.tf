@@ -93,16 +93,6 @@ locals {
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
 
-    "file-handler" = {
-      component                  = "file-handler"
-      db_name                    = "opal-file-db"
-      enabled_envs               = local.default_envs
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-file-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
-    }
-
     "maintenance-service" = {
       component       = "maintenance-service"
       db_name         = "opal-maintenance-db"
