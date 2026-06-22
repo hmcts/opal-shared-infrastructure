@@ -45,6 +45,8 @@ COMPOSE_FILES=(
   -f "$BASE_DIR/opal-user-service/docker-compose.local.yml"
   -f "$BASE_DIR/opal-logging-service/docker-compose.base.yml"
   -f "$BASE_DIR/opal-logging-service/docker-compose.local.yml"
+  -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.base.yml"
+  -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.local.yml"
 )
 
 PROJECT=opal-stack
