@@ -7,8 +7,8 @@ module "application_insights" {
   location            = azurerm_resource_group.opal_resource_group.location
   resource_group_name = azurerm_resource_group.opal_resource_group.name
 
-  common_tags         = var.common_tags
-  sampling_percentage = 100
+  common_tags          = var.common_tags
+  sampling_percentage  = 100
   daily_data_cap_in_gb = 100
 }
 
