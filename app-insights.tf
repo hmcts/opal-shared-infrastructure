@@ -9,6 +9,7 @@ module "application_insights" {
 
   common_tags         = var.common_tags
   sampling_percentage = 100
+  daily_data_cap_in_gb = 100
 }
 
 moved {
