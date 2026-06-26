@@ -1,11 +1,12 @@
 #!groovy
 
-@Library("Infrastructure@2.0.0") _
+@Library("Infrastructure@2.0.0")
 
 def product = "opal"
+def component = "infrastructure"
 def branchesToSync = ['demo', 'perftest', 'ithc']
 
-withInfraPipeline(product) {
+withInfraPipeline(product, component) {
     enableSlackNotifications('#opal-builds')
     syncBranchesWithMaster(branchesToSync)
 }
