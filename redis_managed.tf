@@ -29,23 +29,23 @@ module "opal_managed_redis" {
 }
 
 
-resource "azurerm_key_vault_secret" "redis_primary_access_key" {
+resource "azurerm_key_vault_secret" "managed_redis_primary_access_key" {
   name         = "managed-redis-primary-access-key"
   value        = module.opal_managed_redis.primary_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
-resource "azurerm_key_vault_secret" "redis_hostname" {
+resource "azurerm_key_vault_secret" "managed_redis_hostname" {
   name         = "managed-redis-hostname"
   value        = module.opal_managed_redis.hostname
   key_vault_id = module.opal_key_vault.key_vault_id
 }
-resource "azurerm_key_vault_secret" "redis_port" {
+resource "azurerm_key_vault_secret" "managed_redis_port" {
   name         = "managed-redis-port"
   value        = module.opal_managed_redis.port
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
-resource "azurerm_key_vault_secret" "redis_connection_string" {
+resource "azurerm_key_vault_secret" "managed_redis_connection_string" {
   name  = "managed-redis-connection-string"
   value = "rediss://:${urlencode(module.opal_managed_redis.primary_access_key)}@${module.opal_managed_redis.hostname}:${module.opal_managed_redis.port}?tls=true"
 
