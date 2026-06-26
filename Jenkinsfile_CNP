@@ -3,10 +3,9 @@
 @Library("Infrastructure@2.0.0")
 
 def product = "opal"
-def component = "infrastructure"
 def branchesToSync = ['demo', 'perftest', 'ithc']
 
-withInfraPipeline(product, component) {
+withInfraPipeline(product) {
     enableSlackNotifications('#opal-builds')
     syncBranchesWithMaster(branchesToSync)
 }
