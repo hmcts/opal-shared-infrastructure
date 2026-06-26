@@ -5,8 +5,8 @@ data "azurerm_subnet" "redis_private_endpoint" {
 }
 
 module "opal_managed_redis" {
-  source = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
-  name = "${var.product}-${var.env}"
+  source      = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
+  name        = "${var.product}-${var.env}"
   product     = var.product
   component   = var.component
   env         = var.env
