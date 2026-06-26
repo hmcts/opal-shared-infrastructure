@@ -108,6 +108,7 @@ REPOS=(
   opal-fines-service
   opal-user-service
   opal-logging-service
+  opal-legacy-db-stub
   opal-shared-infrastructure
 )
 
@@ -134,6 +135,7 @@ GRADLE_REPOS=(
   opal-fines-service
   opal-user-service
   opal-logging-service
+  opal-legacy-db-stub
 )
 
 if [[ "$SKIP_CLEAN" == "false" ]]; then
@@ -158,6 +160,8 @@ COMPOSE_FILES=(
   -f "$BASE_DIR/opal-user-service/docker-compose.local.yml"
   -f "$BASE_DIR/opal-logging-service/docker-compose.base.yml"
   -f "$BASE_DIR/opal-logging-service/docker-compose.local.yml"
+  -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.base.yml"
+  -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.local.yml"
 )
 
 if [[ "$INCLUDE_FRONTEND" == "true" ]]; then

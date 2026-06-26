@@ -90,6 +90,8 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo "# feature flagging level config (only used when LD is disabled)"
   echo "RELEASE_1A_ENABLED=true"
   echo "RELEASE_1B_ENABLED=true"
+  echo "RELEASE_1C_ENABLED=true"
+  echo "RELEASE_1C_ENFORCEMENT_OPERATIONAL_REPORTING_ENABLED=true"
   echo ""
   echo "## Opal Test User Credentials"
   echo "OPAL_TEST_USER_PASSWORD=$(az keyvault secret show --vault-name opal-stg --name OpalTestUserPassword | jq -r .value)"
