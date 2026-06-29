@@ -8,6 +8,7 @@ Pulls all required repositories that you do not currently have checked out into 
 - opal-fines-service
 - opal-user-service
 - opal-logging-service
+- opal-file-handler-service
 
 ## opalBuild
 
@@ -80,6 +81,21 @@ Examples:
 ./scripts/opalLoggingRebuild.sh --keep-image
 ./scripts/opalLoggingRebuild.sh --skip-gradle
 ```
+
+## opalFileHandlerServiceRebuild
+
+Stops and removes only the `opal-file-handler-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```
+./scripts/opalFileHandlerRebuild.sh
+./scripts/opalFileHandlerRebuild.sh --branch my-feature
+./scripts/opalFileHandlerRebuild.sh --keep-image
+./scripts/opalFileHandlerRebuild.sh --skip-gradle
+```
+
 
 ## Install as commands
 If you would like to be able to run these commands from any terminal, you can do the following.
