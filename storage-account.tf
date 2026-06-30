@@ -87,11 +87,11 @@ module "opal_file_handler_service_file_store" {
 
   containers = [
     {
-      name        = "BTEckoh-report"
+      name        = "bteckoh-report"
       access_type = "private"
     },
     {
-      name        = "CAPS-report"
+      name        = "caps-report"
       access_type = "private"
     }
   ]
@@ -106,16 +106,16 @@ module "opal_file_handler_service_file_store" {
 }
 
 
-resource "azurerm_key_vault_secret" "BTEckoh_report_container_name" {
-  name         = "BTEckoh-report-container-name"
+resource "azurerm_key_vault_secret" "bteckoh_report_container_name" {
+  name         = "bteckoh-report-container-name"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = "BTEckoh-report"
+  value        = "bteckoh-report"
 }
 
-resource "azurerm_key_vault_secret" "CAPS_report_container_name" {
-  name         = "CAPS-report-container-name"
+resource "azurerm_key_vault_secret" "caps_report_container_name" {
+  name         = "caps-report-container-name"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = "CAPS-report"
+  value        = "caps-report"
 }
 
 resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_primary_blob_endpoint" {
