@@ -74,11 +74,11 @@ resource "azurerm_key_vault_secret" "storage_primary_connection_string" {
 }
 
 
-module "opal_file_handler_storage" {
+module "opal_file_handler_service_file_store" {
   source = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
 
   env                      = var.env
-  storage_account_name     = "opal-file-handler-store"
+  storage_account_name     = "opalfilehandlersa${var.env}"
   resource_group_name      = azurerm_resource_group.opal_resource_group.name
   location                 = azurerm_resource_group.opal_resource_group.location
   account_kind             = "StorageV2"
@@ -118,26 +118,26 @@ resource "azurerm_key_vault_secret" "CAPS_report_container_name" {
   value        = "CAPS-report"
 }
 
-resource "azurerm_key_vault_secret" "opal_file_handler_storage_primary_blob_endpoint" {
-  name         = "opal-file-handler-storage-blob-endpoint"
+resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_primary_blob_endpoint" {
+  name         = "opal-file-handler-service-file-store-blob-endpoint"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = module.opal_file_handler_storage.storageaccount_primary_blob_endpoint
+  value        = module.opal_file_handler_service_file_store.storageaccount_primary_blob_endpoint
 }
 
-resource "azurerm_key_vault_secret" "opal_file_handler_storage_account_name" {
-  name         = "opal-file-handler-storage-account-name"
+resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_account_name" {
+  name         = "opal-file-handler-service-file-store-account-name"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = module.opal_file_handler_storage.storageaccount_name
+  value        = module.opal_file_handler_service_file_store.storageaccount_name
 }
 
-resource "azurerm_key_vault_secret" "opal_file_handler_storage_primary_access_key" {
-  name         = "opal-file-handler-storage-access-key"
+resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_primary_access_key" {
+  name         = "opal-file-handler-service-file-store-access-key"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = module.opal_file_handler_storage.storageaccount_primary_access_key
+  value        = module.opal_file_handler_service_file_store.storageaccount_primary_access_key
 }
 
-resource "azurerm_key_vault_secret" "opal_file_handler_storage_primary_connection_string" {
-  name         = "opal-file-handler-storage-connection-string"
+resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_primary_connection_string" {
+  name         = "opal-file-handler-service-file-store-connection-string"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = module.opal_file_handler_storage.storageaccount_primary_connection_string
+  value        = module.opal_file_handler_service_file_store.storageaccount_primary_connection_string
 }
