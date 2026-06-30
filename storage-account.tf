@@ -78,7 +78,7 @@ module "opal_file_handler_storage" {
   source = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
 
   env                      = var.env
-  storage_account_name     = "opal-file-handler-service-file-store-${var.env}"
+  storage_account_name     = "opal-file-handler-store"
   resource_group_name      = azurerm_resource_group.opal_resource_group.name
   location                 = azurerm_resource_group.opal_resource_group.location
   account_kind             = "StorageV2"
