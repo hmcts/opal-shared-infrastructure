@@ -16,6 +16,7 @@ module "opal_redis" {
   public_network_access_enabled = false
 }
 
+
 resource "azurerm_key_vault_secret" "redis_access_key" {
   count        = var.env == "test" ? 0 : 1
   name         = "redis-access-key"
