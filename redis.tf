@@ -1,6 +1,5 @@
 # Commenting out Redis configuration as already in Staging
 module "opal_redis" {
-  count         = var.env == "test" ? 0 : 1
   source        = "git@github.com:hmcts/cnp-module-redis?ref=master"
   product       = var.product
   location      = var.location
@@ -16,29 +15,26 @@ module "opal_redis" {
   public_network_access_enabled = false
 }
 
+
 resource "azurerm_key_vault_secret" "redis_access_key" {
-  count        = var.env == "test" ? 0 : 1
   name         = "redis-access-key"
-  value        = module.opal_redis[0].access_key
+  value        = module.opal_redis.access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 resource "azurerm_key_vault_secret" "redis_host_name" {
-  count        = var.env == "test" ? 0 : 1
   name         = "redis-host-name"
-  value        = module.opal_redis[0].host_name
+  value        = module.opal_redis.host_name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 resource "azurerm_key_vault_secret" "redis_redis_port" {
-  count        = var.env == "test" ? 0 : 1
   name         = "redis-redis-port"
-  value        = module.opal_redis[0].redis_port
+  value        = module.opal_redis.redis_port
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 
 resource "azurerm_key_vault_secret" "redis_connection_string" {
-  count = var.env == "test" ? 0 : 1
   name  = "redis-connection-string"
-  value = "rediss://:${urlencode(module.opal_redis[0].access_key)}@${module.opal_redis[0].host_name}:${module.opal_redis[0].redis_port}?tls=true"
+  value = "rediss://:${urlencode(module.opal_redis.access_key)}@${module.opal_redis.host_name}:${module.opal_redis.redis_port}?tls=true"
 
   key_vault_id = module.opal_key_vault.key_vault_id
 }
