@@ -1,7 +1,7 @@
 data "azurerm_subnet" "redis_private_endpoint" {
-  name                 = "core-infra-subnet-2-${var.env}"
-  resource_group_name  = "core-infra-${var.env}"
-  virtual_network_name = "core-infra-vnet-${var.env}"
+  name                 = "iaas"
+  resource_group_name  = "ss-${var.env}-network-rg"
+  virtual_network_name = "ss-${var.env}-vnet"
 }
 
 module "opal_managed_redis" {
@@ -21,7 +21,6 @@ module "opal_managed_redis" {
   create_private_endpoint            = true
   subnet_id                          = data.azurerm_subnet.redis_private_endpoint.id
   private_dns_zone_ids               = ["/subscriptions/${var.private_dns_subscription_id}/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.redis.azure.net"]
-  business_area                      = var.businessArea
   access_keys_authentication_enabled = true
 
   # Backup (persistence) options:
