@@ -17,11 +17,11 @@ module "opal_managed_redis" {
   sku_name = "Balanced_B0"
 
   # Networking:
-  public_network_access   = "Disabled"
-  create_private_endpoint = true
-  subnet_id               = data.azurerm_subnet.redis_private_endpoint.id
-  private_dns_zone_ids    = ["/subscriptions/${var.private_dns_subscription_id}/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.redis.azure.net"]
-
+  public_network_access              = "Disabled"
+  create_private_endpoint            = true
+  subnet_id                          = data.azurerm_subnet.redis_private_endpoint.id
+  private_dns_zone_ids               = ["/subscriptions/${var.private_dns_subscription_id}/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.redis.azure.net"]
+  business_area                      = var.businessArea
   access_keys_authentication_enabled = true
 
   # Backup (persistence) options:
