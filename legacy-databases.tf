@@ -17,7 +17,7 @@ module "legacy_postgresql" {
   env                  = var.env
   product              = var.product
   component            = each.value.component
-  business_area        = "sds"
+  business_area        = var.businessArea
   collation            = local.db_collation
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
