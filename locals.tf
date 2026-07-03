@@ -8,6 +8,10 @@ locals {
     {
       name  = "backslash_quote"
       value = "on"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 
@@ -19,6 +23,10 @@ locals {
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
       value = "off"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 
@@ -104,6 +112,10 @@ locals {
         {
           name  = "backslash_quote"
           value = "safe_encoding"
+        },
+        {
+          name  = "timezone"
+          value = "UTC"
         }
       ]
     }
@@ -151,6 +163,10 @@ locals {
     {
       name  = "logfiles.retention_days"
       value = "7"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 }
