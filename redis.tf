@@ -6,7 +6,7 @@ module "opal_redis" {
   env           = var.env
   common_tags   = var.common_tags
   redis_version = "6"
-  business_area = "sds"
+  business_area = var.businessArea
   sku_name      = var.redis_sku_name
   family        = var.redis_family
   capacity      = var.redis_capacity
@@ -14,6 +14,7 @@ module "opal_redis" {
   private_endpoint_enabled      = true
   public_network_access_enabled = false
 }
+
 
 resource "azurerm_key_vault_secret" "redis_access_key" {
   name         = "redis-access-key"
