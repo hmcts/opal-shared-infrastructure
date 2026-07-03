@@ -6,5 +6,5 @@ services:
     volumes:
       - ./bais-emulator/data:/home
     command: >
-      BTEckoh:password1:1001
-      CAPS:password2:1002
+      BTEckoh-report:password1:1001
+      CAPS-report:password2:1002
