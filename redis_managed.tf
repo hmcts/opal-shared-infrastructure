@@ -29,7 +29,7 @@ module "opal_managed_redis" {
 
 
 resource "azurerm_key_vault_secret" "managed_redis_primary_access_key" {
-  name         = "redis-access-key"
+  name         = "redis-primary-access-key"
   value        = module.opal_managed_redis.primary_access_key
   key_vault_id = module.opal_key_vault.key_vault_id
 }
