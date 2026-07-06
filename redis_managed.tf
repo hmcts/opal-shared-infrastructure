@@ -34,7 +34,7 @@ resource "azurerm_key_vault_secret" "managed_redis_primary_access_key" {
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 resource "azurerm_key_vault_secret" "managed_redis_hostname" {
-  name         = "redis-host-name"
+  name         = "redis-hostname"
   value        = module.opal_managed_redis.hostname
   key_vault_id = module.opal_key_vault.key_vault_id
 }
