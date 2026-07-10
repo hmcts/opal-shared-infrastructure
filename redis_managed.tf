@@ -12,7 +12,6 @@ module "opal_managed_redis" {
   env               = var.env
   location          = var.location
   common_tags       = var.common_tags
-  clustering_policy = "NoCluster"
 
   # Performance:
   sku_name = "Balanced_B0"
