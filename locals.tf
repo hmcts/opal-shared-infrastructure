@@ -1,6 +1,6 @@
 locals {
-  private_endpoint_rg_name   = var.businessArea == "sds" ? "ss-${var.env}-network-rg" : "${var.businessArea}-${var.env}-network-rg"
-  private_endpoint_vnet_name = var.businessArea == "sds" ? "ss-${var.env}-vnet" : "${var.businessArea}-${var.env}-vnet"
+  private_endpoint_rg_name   = "ss-${var.env}-network-rg"
+  private_endpoint_vnet_name = "ss-${var.env}-vnet"
 
   db_port      = 5432
   db_version   = 17

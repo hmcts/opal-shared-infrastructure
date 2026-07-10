@@ -13,6 +13,12 @@ locals {
   }
 }
 
+data "azurerm_key_vault_secret" "bais_emulator_public_key" {
+  name         = "bais-emulator-public-key"
+  count        = local.isNotProdCount
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
 module "opal_file_handler_service_bais_emulator" {
   source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
   count                    = local.isNotProdCount
@@ -54,13 +60,14 @@ resource "azurerm_storage_account_local_user" "bais_emulator_users" {
 
   ssh_authorized_key {
     description = "bais-emulator-public-key"
-    key         = var.bais_emulator_public_key
+    key         = trimspace(data.azurerm_key_vault_secret.bais_emulator_public_key[0].value)
   }
 
   permission_scope {
     permissions {
       read   = true
       create = true
+      delete = true
       write  = true
       list   = true
     }
