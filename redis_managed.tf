@@ -14,6 +14,7 @@ module "opal_managed_redis" {
   common_tags       = var.common_tags
   clustering_policy = "EnterpriseCluster"
 
+
   # Performance:
   sku_name = "Balanced_B0"
 
