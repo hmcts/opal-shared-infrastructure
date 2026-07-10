@@ -1,0 +1,10 @@
+services:
+  sftp:
+    image: atmoz/sftp:latest
+    ports:
+      - "2222:22"
+    volumes:
+      - ./bais-emulator/data:/home
+    command: >
+      BTEckoh-report:password1:1001
+      CAPS-report:password2:1002

@@ -11,6 +11,7 @@ REPOS=(
   opal-shared-infrastructure
   opal-frontend
   opal-common-lib
+  opal-file-handler-service
 )
 
 GIT_BASE_URL="https://github.com/hmcts"
