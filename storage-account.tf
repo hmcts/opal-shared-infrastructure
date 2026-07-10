@@ -1,14 +1,3 @@
-locals {
-  private_endpoint_rg_name   = var.businessArea == "sds" ? "ss-${var.env}-network-rg" : "${var.businessArea}-${var.env}-network-rg"
-  private_endpoint_vnet_name = var.businessArea == "sds" ? "ss-${var.env}-vnet" : "${var.businessArea}-${var.env}-vnet"
-}
-
-data "azurerm_subnet" "private_endpoints" {
-  resource_group_name  = local.private_endpoint_rg_name
-  virtual_network_name = local.private_endpoint_vnet_name
-  name                 = "private-endpoints"
-}
-
 module "opal_storage" {
   source = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
 
@@ -36,6 +25,7 @@ module "opal_storage" {
 
   team_contact = "#opal"
   common_tags  = var.common_tags
+  defender_enabled = true
 }
 
 

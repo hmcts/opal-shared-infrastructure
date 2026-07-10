@@ -76,3 +76,28 @@ variable "valcon_servicebus_topic_names" {
 variable "private_dns_subscription_id" {
   default = "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
 }
+
+variable "bais_emulator_public_key" {
+  description = "SSH public key shared by all BAIS emulator SFTP local users"
+  type        = string
+  default     = ""
+}
+
+variable "bais_emulator_sftp_mappings" {
+  description = "List of BAIS emulator SFTP users and their associated blob containers"
+  type = list(object({
+    container_name = string
+    user_name      = string
+  }))
+
+  default = [
+    {
+      container_name = "bteckoh-report"
+      user_name      = "BTEckoh-report"
+    },
+    {
+      container_name = "caps-report"
+      user_name      = "CAPS-report"
+    }
+  ]
+}
