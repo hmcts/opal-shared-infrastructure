@@ -5,13 +5,14 @@ data "azurerm_subnet" "redis_private_endpoint" {
 }
 
 module "opal_managed_redis" {
-  source      = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
-  name        = "${var.product}-${var.env}"
-  product     = var.product
-  component   = var.component
-  env         = var.env
-  location    = var.location
-  common_tags = var.common_tags
+  source            = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
+  name              = "${var.product}-${var.env}"
+  product           = var.product
+  component         = var.component
+  env               = var.env
+  location          = var.location
+  common_tags       = var.common_tags
+  clustering_policy = "NoCluster"
 
   # Performance:
   sku_name = "Balanced_B0"
