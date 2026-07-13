@@ -23,8 +23,8 @@ module "opal_storage" {
   public_network_access_enabled = false
   private_endpoint_subnet_id    = data.azurerm_subnet.private_endpoints.id
 
-  team_contact     = "#opal"
-  common_tags      = var.common_tags
+  team_contact = "#opal"
+  common_tags  = var.common_tags
 }
 
 
