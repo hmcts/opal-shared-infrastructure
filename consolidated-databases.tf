@@ -17,7 +17,7 @@ module "opal_consolidated_postgresql" {
   env                  = var.env
   product              = var.product
   component            = var.component
-  business_area        = "sds"
+  business_area        = var.businessArea
   common_tags          = var.common_tags
   collation            = local.db_collation
   pgsql_version        = local.db_version

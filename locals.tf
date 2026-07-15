@@ -8,6 +8,10 @@ locals {
     {
       name  = "backslash_quote"
       value = "on"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 
@@ -19,6 +23,10 @@ locals {
     {
       name  = "azure.enable_temp_tablespaces_on_local_ssd"
       value = "off"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 
@@ -63,6 +71,16 @@ locals {
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
 
+    "file-handler-service" = {
+      component                  = "file-handler-service"
+      db_name                    = "opal-file-handler-db"
+      enabled_envs               = local.default_envs
+      collation                  = local.db_collation
+      pgsql_version              = local.db_version
+      pgsql_databases            = [{ name = "opal-file-handler-db" }]
+      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+    }
+
     "logging-service" = {
       component                  = "logging-service"
       db_name                    = "opal-logging-db"
@@ -83,16 +101,6 @@ locals {
       pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
     }
 
-    "file-handler" = {
-      component                  = "file-handler"
-      db_name                    = "opal-file-db"
-      enabled_envs               = local.default_envs
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-file-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
-    }
-
     "maintenance-service" = {
       component       = "maintenance-service"
       db_name         = "opal-maintenance-db"
@@ -104,6 +112,10 @@ locals {
         {
           name  = "backslash_quote"
           value = "safe_encoding"
+        },
+        {
+          name  = "timezone"
+          value = "UTC"
         }
       ]
     }
@@ -151,6 +163,10 @@ locals {
     {
       name  = "logfiles.retention_days"
       value = "7"
+    },
+    {
+      name  = "timezone"
+      value = "UTC"
     }
   ]
 }

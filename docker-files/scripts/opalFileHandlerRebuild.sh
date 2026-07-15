@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ -z "${BASE_DIR:-}" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  BASE_DIR="$(cd "${SCRIPT_DIR}/../../../" && pwd)"
+fi
+
+acr_login() {
+  local registry_name="hmctsprod"
+  local subscription_name="DCD-CNP-Prod"
+  local login_output
+
+  if login_output="$(az acr login --name "$registry_name" --subscription "$subscription_name" 2>&1)"; then
+    return 0
+  fi
+
+  echo "$login_output" >&2
+  echo >&2
+  echo "ACR login failed for $registry_name in $subscription_name." >&2
+  echo "Ensure ZScaler Internet Security is Off" >&2
+  exit 1
+}
+
+acr_login
+
+PROJECT="opal-stack"
+REMOVE_IMAGE=true
+RUN_GRADLE=true
+BRANCH=""
+
+usage() {
+  cat <<'USAGE'
+Usage: opalFileHandlerRebuild [--branch <name>] [--keep-image] [--skip-gradle] [--project <name>]
+
+Stops and removes only the opal-file-handler-service container, optionally removes the image,
+rebuilds the service, and starts it again.
+
+--branch, -b      Switch opal-file-handler-service to this git branch before building
+--keep-image      Do not remove the local opal-file-handler-service image
+--skip-gradle     Skip ./gradlew clean assemble
+--project, -p     Docker Compose project name (default: opal-stack)
+USAGE
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --branch|-b)
+      BRANCH="${2:-}"
+      if [[ -z "$BRANCH" ]]; then
+        echo "Missing branch name" >&2
+        usage >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    --keep-image)
+      REMOVE_IMAGE=false
+      shift
+      ;;
+    --skip-gradle)
+      RUN_GRADLE=false
+      shift
+      ;;
+    --project|-p)
+      PROJECT="${2:-}"
+      if [[ -z "$PROJECT" ]]; then
+        echo "Missing project name" >&2
+        usage >&2
+        exit 2
+      fi
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [[ ! -d "$BASE_DIR/opal-file-handler-service" ]]; then
+  echo "opal-file-handler-service directory not found: $BASE_DIR/opal-file-handler-service" >&2
+  exit 1
+fi
+
+COMPOSE_FILES=(
+  -f "$BASE_DIR/opal-file-handler-service/docker-compose.base.yml"
+  -f "$BASE_DIR/opal-file-handler-service/docker-compose.local.yml"
+)
+
+docker compose -p "$PROJECT" \
+  "${COMPOSE_FILES[@]}" \
+  stop file-handler-service || true
+
+docker compose -p "$PROJECT" \
+  "${COMPOSE_FILES[@]}" \
+  rm -f file-handler-service || true
+
+if [[ "$REMOVE_IMAGE" == "true" ]]; then
+  docker image rm file-handler-service:local || true
+fi
+
+if [[ -n "$BRANCH" ]]; then
+  (cd "$BASE_DIR/opal-file-handler-service" && git switch "$BRANCH")
+fi
+
+if [[ "$RUN_GRADLE" == "true" ]]; then
+  (cd "$BASE_DIR/opal-file-handler-service" && ./gradlew clean assemble)
+fi
+
+docker compose -p "$PROJECT" \
+  "${COMPOSE_FILES[@]}" \
+  up --build -d opal-file-handler-service
