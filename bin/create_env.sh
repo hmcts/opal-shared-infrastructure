@@ -67,7 +67,7 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo ""
   echo "## Launch Darkly Credentials"
   echo "LAUNCH_DARKLY_ENABLED=false"
-  echo "LAUNCH_DARKLY_SDK_KEY=$(az keyvault secret show --vault-name opal-stg --name launch-darkly-sdk-key | jq -r .value)"
+  echo "LAUNCH_DARKLY_SDK_KEY=$(az keyvault secret show --vault-name opal-stg --name launch-darkly-sdk-key-test | jq -r .value)"
   echo ""
   echo "## Opal application configuration"
   echo "REDIS_CONNECTION_STRING=redis://host.docker.internal:6379"
