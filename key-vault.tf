@@ -11,5 +11,6 @@ module "opal_key_vault" {
   developers_group         = var.developers_group
   grant_dev_jenkins_access = var.env == "stg"
   common_tags              = var.common_tags
+  jenkins_object_id                    = data.azurerm_user_assigned_identity.jenkins.principal_id
 }
 
