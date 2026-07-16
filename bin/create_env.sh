@@ -112,6 +112,7 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo "RELEASE_1C_CPP_ENFORCEMENT_ENABLED=true"
   echo "RELEASE_1C_CPP_ENABLED=true"
   echo "RELEASE_1C_PRINTING_ENABLED=true"
+  echo "OPAL_COMMON_CONTENT_DIGEST_REQUEST_AUTO_GENERATE=true"
   echo ""
   echo "## Opal Test User Credentials"
   echo "OPAL_TEST_USER_PASSWORD=$(az keyvault secret show --vault-name opal-stg --name OpalTestUserPassword | jq -r .value)"
