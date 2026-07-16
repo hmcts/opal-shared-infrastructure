@@ -11,6 +11,5 @@ module "opal_key_vault" {
   developers_group        = var.developers_group
   grant_dev_jenkins_access = var.env == "stg"
   common_tags = var.common_tags
-  grant_dev_jenkins_access = var.env == "stg"
 }
 
