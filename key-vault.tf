@@ -1,5 +1,5 @@
 module "opal_key_vault" {
-  source = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
+  source = "git@github.com:hmcts/cnp-module-key-vault?ref=DTSPO-31965/remove-jenkins-ptl-access"
 
   name                    = "${var.product}-${var.env}"
   product                 = var.product
@@ -9,7 +9,8 @@ module "opal_key_vault" {
   product_group_name      = "DTS Green on Black"
   create_managed_identity = true
   developers_group        = var.developers_group
-
+  grant_dev_jenkins_access = var.env == "stg"
   common_tags = var.common_tags
+  grant_dev_jenkins_access = var.env == "stg"
 }
 
