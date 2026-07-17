@@ -1,4 +1,7 @@
 locals {
+  private_endpoint_rg_name   = "ss-${var.env}-network-rg"
+  private_endpoint_vnet_name = "ss-${var.env}-vnet"
+
   db_port      = 5432
   db_version   = 17
   db_collation = "en_GB.utf8"
