@@ -1,6 +1,7 @@
 services:
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite:latest
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0-arm64
+    platform: linux/arm64
     restart: always
     command: >
       azurite --loose

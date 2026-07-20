@@ -1,8 +1,4 @@
-data "azurerm_subnet" "redis_private_endpoint" {
-  name                 = "iaas"
-  resource_group_name  = "ss-${var.env}-network-rg"
-  virtual_network_name = "ss-${var.env}-vnet"
-}
+
 
 module "opal_managed_redis" {
   source            = "git@github.com:hmcts/terraform-module-azure-managed-redis?ref=main"
@@ -21,7 +17,7 @@ module "opal_managed_redis" {
   # Networking:
   public_network_access              = "Disabled"
   create_private_endpoint            = true
-  subnet_id                          = data.azurerm_subnet.redis_private_endpoint.id
+  subnet_id                          = data.azurerm_subnet.private_endpoints.id
   private_dns_zone_ids               = ["/subscriptions/${var.private_dns_subscription_id}/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.redis.azure.net"]
   access_keys_authentication_enabled = true
 

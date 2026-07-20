@@ -1,6 +1,7 @@
 services:
   azure-sb-emulator:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    platform: linux/arm64
     pull_policy: always
     volumes:
       - "../opal-shared-infrastructure/docker-files/ServiceBus_Emulator_config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro"
