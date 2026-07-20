@@ -11,7 +11,7 @@ module "opal_consolidated_postgresql" {
     azurerm.postgres_network = azurerm
   }
 
-  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=DTSPO-30107-additional-postgres-admins"
 
   name                 = "opal-consolidated-db"
   env                  = var.env
