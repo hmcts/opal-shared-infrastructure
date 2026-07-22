@@ -92,3 +92,17 @@ resource "azurerm_key_vault_secret" "servicebus-queue-allocate-tills-queue-name"
   value        = module.servicebus-queue-allocate-tills.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-hmrc-checks" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                = "hmrc-checks"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-hmrc-checks-queue-name" {
+  name         = "servicebus-hmrc-checks-queue-name"
+  value        = module.servicebus-queue-hmrc-checks.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
