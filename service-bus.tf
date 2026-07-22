@@ -92,3 +92,31 @@ resource "azurerm_key_vault_secret" "servicebus-queue-allocate-tills-queue-name"
   value        = module.servicebus-queue-allocate-tills.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-banking-interfaces-preprocess-interface-file-fines" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                = "banking-interfaces-preprocess-interface-file-fines"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preprocess-interface-file-fines-queue-name" {
+  name         = "servicebus-banking-interfaces-preprocess-interface-file-fines-queue-name"
+  value        = module.servicebus-queue-banking-interfaces-preprocess-interface-file-fines.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+module "servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                = "banking-interfaces-preprocess-interface-file-maintenance"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance-queue-name" {
+  name         = "servicebus-banking-interfaces-preprocess-interface-file-maintenance-queue-name"
+  value        = module.servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
