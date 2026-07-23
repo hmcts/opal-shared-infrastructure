@@ -90,14 +90,14 @@ resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_connection_strings"
 }
 
 resource "azurerm_key_vault_secret" "bais_emulator_storage_account_name" {
-  for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
+  count        = local.isNotProdCount
   name         = "bais-emulator-storage-account-name"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_name
 }
 
 resource "azurerm_key_vault_secret" "bais_emulator_storageaccount_primary_blob_endpoint" {
-  for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
+  count        = local.isNotProdCount
   name         = "bais-emulator-storage-account-primary-blob-endpoint"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_primary_blob_endpoint
