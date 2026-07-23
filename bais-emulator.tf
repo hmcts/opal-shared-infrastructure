@@ -76,3 +76,27 @@ resource "azurerm_storage_account_local_user" "bais_emulator_users" {
     resource_name = lookup(each.value, "container_name")
   }
 }
+
+resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_connection_strings" {
+  for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
+  name         = "bais-emulator-${each.value.user_name}-${each.value.container_name}-sftp-connection-string"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value = format(
+    "sftp://%s.%s@%s.blob.core.windows.net",
+    module.opal_file_handler_service_bais_emulator[0].storageaccount_name,
+    azurerm_storage_account_local_user.bais_emulator_users[each.key].name,
+    module.opal_file_handler_service_bais_emulator[0].storageaccount_name
+  )
+}
+
+resource "azurerm_key_vault_secret" "bais_emulator_storage_account_name" {
+  name         = "bais-emulator-storage-account-name"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_name
+}
+
+resource "azurerm_key_vault_secret" "bais_emulator_storageaccount_primary_blob_endpoint" {
+  name         = "bais-emulator-storage-account-primary-blob-endpoint"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_primary_blob_endpoint
+}
