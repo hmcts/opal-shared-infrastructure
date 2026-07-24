@@ -89,6 +89,16 @@ resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_connection_strings"
   )
 }
 
+resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_host" {
+  count        = local.isNotProdCount
+  name         = "bais-emulator-sftp-connection-host"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value = trimsuffix(
+    trimprefix(module.opal_file_handler_service_bais_emulator[0].storageaccount_primary_blob_endpoint, "https://"),
+    "/"
+  )
+}
+
 resource "azurerm_key_vault_secret" "bais_emulator_storage_account_name" {
   count        = local.isNotProdCount
   name         = "bais-emulator-storage-account-name"
