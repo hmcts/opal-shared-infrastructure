@@ -91,6 +91,9 @@
         ],
         "Topics": []
       }
-    ]
+    ],
+    "Logging": {
+      "Type": "File"
+    }
   }
 }
