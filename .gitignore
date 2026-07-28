@@ -15,3 +15,4 @@
 **/.DS_Store
 
 /ssh/bais-sftp-key-full.sh
+/bais-emulator/data/**/.ssh/
