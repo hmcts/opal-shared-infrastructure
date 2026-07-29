@@ -39,6 +39,9 @@ variable "capacity" {
 
 variable "aks_subscription_id" {}
 
+variable "soc_subscription_id" {}
+
+variable "cnp_subscription_id" {}
 
 variable "developers_group" {
   default = "DTS SDS Developers"
