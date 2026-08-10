@@ -1,43 +1,68 @@
 # Bulk Entra Admin
 
-PowerShell 7.2+ utility for controlled bulk operations on test users in the fixed domain `dev.platform.hmcts.net`.
+PowerShell 7.2+ utility for updating test accounts in the fixed domain `dev.platform.hmcts.net`.
 
-The below scrips are intended to be ran in Powershell, you may need admin rights on your machine. You will also need permission in the dev tenant to authenticate with the required permissions, these can be added to your user, or the scripts can be ran by someone who already has access. Depending on the volume of accounts you are updating, this can take a while.
+For every account, the tool:
+
+1. Sets the supplied password.
+2. Deactivates the account.
+3. Reactivates the account.
 
 ## Setup
 
-Open Powershell, or if on Mac, run `pwsh` (after installing powershell)
+Install Microsoft Graph PowerShell and connect to the dev tenant:
 
 ```powershell
 Install-Module Microsoft.Graph -Scope CurrentUser
-Connect-MgGraph -Scopes User.ReadWrite.All
+Connect-MgGraph -TenantId 'GET_ID_FROM_TEAM_MEMBER' `
+  -Scopes 'User.EnableDisableAccount.All', 'User.ReadWrite.All'
 ```
 
-## Preview safely
+The script can also connect itself if `-TenantId` is supplied or entered when prompted.
+
+## Preview first
+
+For numbered accounts, include `{id}` and provide an inclusive start/end range:
 
 ```powershell
-pwsh ./BulkEntraAdmin.ps1 -Pattern 'opal-user-{id}' -StartId 1 -EndId 3 -WhatIf
+pwsh ./BulkEntraAdmin.ps1 `
+  -Pattern 'opal-user-{id}' -StartId 1 -EndId 3 -WhatIf
 ```
+
+This only lists the accounts; it does not ask for a password or connect to Graph.
+
+For one account without a number, omit the range:
+
+```powershell
+pwsh ./BulkEntraAdmin.ps1 -Pattern 'opal-test' -WhatIf
+```
+
+The domain is appended automatically.
 
 ## Run
 
 ```powershell
-pwsh ./BulkEntraAdmin.ps1 -Pattern 'opal-user-{id}' -StartId 1 -EndId 2000
+pwsh ./BulkEntraAdmin.ps1 `
+  -Pattern 'opal-user-{id}' `
+  -StartId 1 -EndId 2000 `
+  -TenantId 'GET_ID_FROM_TEAM_MEMBER'
 ```
 
-The password is requested securely. If no action switch is supplied, the script sets the password, disables the account, and re-enables it. A fixed name such as `opal-test` targets one account; ranges are only used when `{id}` is present.
+The password is requested securely. The script previews the targets and asks for confirmation before making changes.
 
-To select actions explicitly:
+To provide the password through a secure prompt in the command instead:
 
 ```powershell
-pwsh ./BulkEntraAdmin.ps1 -Pattern 'opal-test-{id}' -StartId 1 -EndId 50 `
-  -ResetPassword -ThrottleLimit 3
+pwsh ./BulkEntraAdmin.ps1 `
+  -Pattern 'opal-user-{id}' -StartId 1 -EndId 2000 `
+  -Password (Read-Host -AsSecureString)
 ```
 
-Use `-DisableAccount` and/or `-EnableAccount` for account-state actions. Start with a low throttle and increase cautiously; Microsoft Graph may throttle write-heavy workloads. Each run writes a CSV result log, including partial-action failures.
+## Useful options
 
-## Notes
+- `-ThrottleLimit 3` controls parallelism. Start low and increase cautiously.
+- `-MaxRetries 5` controls retry attempts for Graph updates.
+- `-LogPath ./results.csv` chooses the CSV result location. A timestamped CSV is created by default.
+- `-SkipPreview` skips the account list and confirmation prompt. Use only after testing the exact command with `-WhatIf`.
 
-- Test with a one-user range before a large batch.
-- The script assumes the current Graph connection has permission to update passwords and account state.
-- Parallel Graph SDK calls depend on the current PowerShell Graph session being available to runspaces. If that is not available in your environment, use `-ThrottleLimit 1` or an app-only worker design.
+The required delegated Graph permissions are `User.EnableDisableAccount.All` and `User.ReadWrite.All`. If parallel Graph calls are not supported by the current PowerShell session, use `-ThrottleLimit 1`.
