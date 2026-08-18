@@ -20,7 +20,7 @@ data "azurerm_key_vault_secret" "bais_emulator_public_key" {
 }
 
 module "opal_file_handler_service_bais_emulator" {
-  source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
+  source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=5.x"
   count                    = local.isNotProdCount
   env                      = var.env
   storage_account_name     = "opalsabais${var.env}"
