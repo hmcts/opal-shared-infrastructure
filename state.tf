@@ -1,8 +1,8 @@
 provider "azurerm" {
   features {}
-  resource_provider_registrations = "none"
-  alias                           = "private_endpoint"
-  subscription_id                 = var.aks_subscription_id
+  skip_provider_registration = true
+  alias                      = "private_endpoint"
+  subscription_id            = var.aks_subscription_id
 }
 terraform {
   backend "azurerm" {}
@@ -10,7 +10,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "5.1.0"
+      version = "4.81.0"
     }
     tls = {
       source  = "hashicorp/tls"
