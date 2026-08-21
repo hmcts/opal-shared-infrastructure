@@ -9,10 +9,11 @@ Pulls all required repositories that you do not currently have checked out into 
 - opal-user-service
 - opal-logging-service
 - opal-file-handler-service
+- opal-maintenance-service
 
 ## opalBuild
 
-Builds the Opal docker stack from the directory opal-shared-infrastructure is stored in.
+Builds the Opal Docker stack, including `opal-maintenance-service`, from the directory `opal-shared-infrastructure` is stored in.
 
 You need to specify what `git` operation to perform : `-localBranches`, which fetches/pulls 
 the current branch in each repo; `-localMaster` (`-lm`) to check out `master` first; 
@@ -94,6 +95,20 @@ Examples:
 ./scripts/opalFileHandlerRebuild.sh --branch my-feature
 ./scripts/opalFileHandlerRebuild.sh --keep-image
 ./scripts/opalFileHandlerRebuild.sh --skip-gradle
+```
+
+## opalMaintenanceRebuild
+
+Stops and removes only the `opal-maintenance-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```text
+./scripts/opalMaintenanceRebuild.sh
+./scripts/opalMaintenanceRebuild.sh --branch my-feature
+./scripts/opalMaintenanceRebuild.sh --keep-image
+./scripts/opalMaintenanceRebuild.sh --skip-gradle
 ```
 
 
