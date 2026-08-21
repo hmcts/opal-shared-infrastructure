@@ -1,11 +1,11 @@
 include:
-  - path: ./docker-compose.yml
-  - path: ./docker-compose-service-bus.yml
+  - path: ../opal-shared-infrastructure/docker-compose.yml
+  - path: ../opal-shared-infrastructure/docker-compose-service-bus.yml
 
 services:
   opal-maintenance-service:
     env_file:
-      - ./docker-files/.env.shared
+      - ../opal-shared-infrastructure/docker-files/.env.shared
     environment:
       # these environment variables are used by java-logging library
       - ROOT_APPENDER
