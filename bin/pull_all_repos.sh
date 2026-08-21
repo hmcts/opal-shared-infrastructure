@@ -12,6 +12,7 @@ REPOS=(
   opal-frontend
   opal-common-lib
   opal-file-handler-service
+  opal-maintenance-service
   opal-legacy-db-stub
 )
 

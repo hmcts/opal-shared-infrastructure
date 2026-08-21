@@ -49,6 +49,7 @@ COMPOSE_FILES=(
   -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.local.yml"
   -f "$BASE_DIR/opal-file-handler-service/docker-compose.base.yml"
   -f "$BASE_DIR/opal-file-handler-service/docker-compose.local.yml"
+  -f "$BASE_DIR/opal-shared-infrastructure/docker-compose-maintenance.yml"
 )
 
 PROJECT=opal-stack
@@ -56,4 +57,3 @@ PROJECT=opal-stack
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \
   "${DOWN_ARGS[@]}" || true
-
