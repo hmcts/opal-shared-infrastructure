@@ -9,10 +9,11 @@ Pulls all required repositories that you do not currently have checked out into 
 - opal-user-service
 - opal-logging-service
 - opal-file-handler-service
+- opal-maintenance-service
 
 ## opalBuild
 
-Builds the Opal docker stack from the directory opal-shared-infrastructure is stored in.
+Builds the Opal Docker stack, including `opal-maintenance-service`, from the directory `opal-shared-infrastructure` is stored in.
 
 You need to specify what `git` operation to perform : `-localBranches`, which fetches/pulls 
 the current branch in each repo; `-localMaster` (`-lm`) to check out `master` first; 
@@ -96,6 +97,20 @@ Examples:
 ./scripts/opalFileHandlerRebuild.sh --skip-gradle
 ```
 
+## opalMaintenanceRebuild
+
+Stops and removes only the `opal-maintenance-service` container, optionally removes
+the local image, rebuilds, and starts the service again.
+
+Examples:
+
+```text
+./scripts/opalMaintenanceRebuild.sh
+./scripts/opalMaintenanceRebuild.sh --branch my-feature
+./scripts/opalMaintenanceRebuild.sh --keep-image
+./scripts/opalMaintenanceRebuild.sh --skip-gradle
+```
+
 
 ## Install as commands
 If you would like to be able to run these commands from any terminal, you can do the following.
@@ -134,6 +149,7 @@ mkdir -p "$HOME/bin"
 
 install -m 755 ./opalBuild.sh "$HOME/bin/opalBuild"
 install -m 755 ./opalDown.sh  "$HOME/bin/opalDown"
+install -m 755 ./opalMaintenanceRebuild.sh "$HOME/bin/opalMaintenanceRebuild"
 ```
 ---
 The scripts can now be used from any terminal.
@@ -147,4 +163,7 @@ opalBuild -c
 
 opalDown
 opalDown -r
+
+opalMaintenanceRebuild
+opalMaintenanceRebuild --branch my-feature
 ```
