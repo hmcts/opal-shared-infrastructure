@@ -167,6 +167,7 @@ test_postgres_timeout_is_bounded() {
 test_opal_build_provisions_before_complete_stack_start() {
   local fixture_dir="${TEST_ROOT}/build"
   local output_file="${fixture_dir}/output.log"
+  local compose_file
   local provision_line
   local stack_line
 
@@ -187,8 +188,22 @@ test_opal_build_provisions_before_complete_stack_start() {
   [[ "$provision_line" -lt "$stack_line" ]] || fail "Expected provisioning before complete stack start"
   assert_contains "${fixture_dir}/docker.log" \
     "compose -p opal-stack -f ${fixture_dir}/opal-shared-infrastructure/docker-compose-maintenance.yml up -d --no-deps opal-db"
+  for compose_file in \
+    opal-fines-service/docker-compose.base.yml \
+    opal-fines-service/docker-compose.local.yml \
+    opal-user-service/docker-compose.base.yml \
+    opal-user-service/docker-compose.local.yml \
+    opal-logging-service/docker-compose.base.yml \
+    opal-logging-service/docker-compose.local.yml \
+    opal-legacy-db-stub/docker-compose.base.yml \
+    opal-legacy-db-stub/docker-compose.local.yml \
+    opal-file-handler-service/docker-compose.base.yml \
+    opal-file-handler-service/docker-compose.local.yml; do
+    assert_contains "${fixture_dir}/docker.log" "-f ${fixture_dir}/${compose_file}"
+  done
   assert_contains "${fixture_dir}/docker.log" \
     "-f ${fixture_dir}/opal-shared-infrastructure/docker-compose-maintenance.yml up --build -d"
+  assert_count "${fixture_dir}/docker.log" 1 "up --build -d"
 }
 
 test_maintenance_rebuild_provisions_before_service_start() {
@@ -212,6 +227,10 @@ test_maintenance_rebuild_provisions_before_service_start() {
   provision_line="$(grep -nF "up -d --no-deps opal-db" "${fixture_dir}/docker.log" | cut -d: -f1)"
   service_line="$(grep -nF "up --build -d opal-maintenance-service" "${fixture_dir}/docker.log" | cut -d: -f1)"
   [[ "$provision_line" -lt "$service_line" ]] || fail "Expected provisioning before Maintenance Service start"
+  assert_contains "${fixture_dir}/docker.log" \
+    "compose -p test-stack -f ${fixture_dir}/opal-shared-infrastructure/docker-compose-maintenance.yml stop opal-maintenance-service"
+  assert_contains "${fixture_dir}/docker.log" \
+    "compose -p test-stack -f ${fixture_dir}/opal-shared-infrastructure/docker-compose-maintenance.yml rm -f opal-maintenance-service"
   assert_contains "${fixture_dir}/docker.log" \
     "compose -p test-stack -f ${fixture_dir}/opal-shared-infrastructure/docker-compose-maintenance.yml up -d --no-deps opal-db"
   assert_contains "${fixture_dir}/docker.log" \
