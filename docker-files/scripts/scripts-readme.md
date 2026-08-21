@@ -21,8 +21,6 @@ the current branch in each repo; `-localMaster` (`-lm`) to check out `master` fi
 
 The script will then `./gradlew clean assemble` each repository (unless you specify 
 `--skipClean` or `-sc`), before building the docker images and then starting the stack.
-Before starting the stack, it also starts the shared PostgreSQL container and ensures
-`opal-maintenance-db` exists, including when reusing an older database volume.
 
 Examples:
 
@@ -102,13 +100,7 @@ Examples:
 ## opalMaintenanceRebuild
 
 Stops and removes only the `opal-maintenance-service` container, optionally removes
-the local image, rebuilds, ensures `opal-maintenance-db` exists in the shared PostgreSQL
-container, and starts the service again. The database wait defaults to 30 attempts at
-two-second intervals; set `OPAL_DB_READY_MAX_ATTEMPTS` and
-`OPAL_DB_READY_INTERVAL_SECONDS` to override these values.
-
-The Maintenance Service calls User Service at `http://opal-user-service:4555/` by
-default. Set `OPAL_USER_SERVICE_API_URL` to override this Compose environment value.
+the local image, rebuilds, and starts the service again.
 
 Examples:
 
@@ -157,7 +149,6 @@ mkdir -p "$HOME/bin"
 
 install -m 755 ./opalBuild.sh "$HOME/bin/opalBuild"
 install -m 755 ./opalDown.sh  "$HOME/bin/opalDown"
-install -m 755 ./opalMaintenanceRebuild.sh "$HOME/bin/opalMaintenanceRebuild"
 ```
 ---
 The scripts can now be used from any terminal.
@@ -171,7 +162,4 @@ opalBuild -c
 
 opalDown
 opalDown -r
-
-opalMaintenanceRebuild
-opalMaintenanceRebuild --branch my-feature
 ```

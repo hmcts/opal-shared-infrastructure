@@ -89,7 +89,8 @@ if [[ ! -d "$BASE_DIR/opal-maintenance-service" ]]; then
 fi
 
 COMPOSE_FILES=(
-  -f "$BASE_DIR/opal-shared-infrastructure/docker-compose-maintenance.yml"
+  -f "$BASE_DIR/opal-maintenance-service/docker-compose.base.yml"
+  -f "$BASE_DIR/opal-maintenance-service/docker-compose.local.yml"
 )
 
 docker compose -p "$PROJECT" \
@@ -111,9 +112,6 @@ fi
 if [[ "$RUN_GRADLE" == "true" ]]; then
   (cd "$BASE_DIR/opal-maintenance-service" && ./gradlew clean assemble)
 fi
-
-"$BASE_DIR/opal-shared-infrastructure/docker-files/scripts/opalMaintenanceDatabaseProvision.sh" \
-  --project "$PROJECT"
 
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \

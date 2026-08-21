@@ -168,7 +168,8 @@ COMPOSE_FILES=(
   -f "$BASE_DIR/opal-legacy-db-stub/docker-compose.local.yml"
   -f "$BASE_DIR/opal-file-handler-service/docker-compose.base.yml"
   -f "$BASE_DIR/opal-file-handler-service/docker-compose.local.yml"
-  -f "$BASE_DIR/opal-shared-infrastructure/docker-compose-maintenance.yml"
+  -f "$BASE_DIR/opal-maintenance-service/docker-compose.base.yml"
+  -f "$BASE_DIR/opal-maintenance-service/docker-compose.local.yml"
 )
 
 if [[ "$INCLUDE_FRONTEND" == "true" ]]; then
@@ -177,9 +178,6 @@ if [[ "$INCLUDE_FRONTEND" == "true" ]]; then
     -f "$BASE_DIR/opal-frontend/docker-compose.local.yml"
   )
 fi
-
-"$BASE_DIR/opal-shared-infrastructure/docker-files/scripts/opalMaintenanceDatabaseProvision.sh" \
-  --project "$PROJECT"
 
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \
