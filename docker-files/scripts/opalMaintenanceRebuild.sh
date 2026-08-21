@@ -112,6 +112,9 @@ if [[ "$RUN_GRADLE" == "true" ]]; then
   (cd "$BASE_DIR/opal-maintenance-service" && ./gradlew clean assemble)
 fi
 
+"$BASE_DIR/opal-shared-infrastructure/docker-files/scripts/opalMaintenanceDatabaseProvision.sh" \
+  --project "$PROJECT"
+
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \
   up --build -d opal-maintenance-service

@@ -178,6 +178,9 @@ if [[ "$INCLUDE_FRONTEND" == "true" ]]; then
   )
 fi
 
+"$BASE_DIR/opal-shared-infrastructure/docker-files/scripts/opalMaintenanceDatabaseProvision.sh" \
+  --project "$PROJECT"
+
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \
   up --build -d
