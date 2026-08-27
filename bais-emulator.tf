@@ -98,6 +98,23 @@ resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_host" {
     "/"
   )
 }
+resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_port" {
+  count        = local.isNotProdCount
+  name         = "bais-emulator-sftp-connection-port"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value = "22"
+}
+
+resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_username" {
+  for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
+  name         = "bais-emulator-sftp-${each.value.user_name}-${each.value.container_name}-username"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value = format(
+    "%s.%s",
+    module.opal_file_handler_service_bais_emulator[0].storageaccount_name,
+    azurerm_storage_account_local_user.bais_emulator_users[each.key].name
+  )
+}
 
 resource "azurerm_key_vault_secret" "bais_emulator_storage_account_name" {
   count        = local.isNotProdCount
