@@ -136,6 +136,6 @@ resource "azurerm_key_vault_secret" "caps_report_container_name" {
 
 resource "azurerm_key_vault_secret" "allpay_container_name" {
   name         = "allpay-container-name"
-  key_vault_id = "allpay-container-name"
-  value        = "allpay"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = "allpay-report"
 }
