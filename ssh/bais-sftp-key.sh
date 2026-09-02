@@ -25,8 +25,8 @@ Optional:
   --subscription <id-or-name>     Azure subscription for az account set
   --output-dir <dir>              Directory to write keys (default: ./ssh)
   --key-name <name>               Key file basename (default: bais-sftp)
-  --public-secret-name <name>     KV secret name for public key (default: bais-emulator-public-key)
-  --private-secret-name <name>    KV secret name for private key (default: bais-emulator-private-key)
+  --public-secret-name <name>     KV secret name for public key (default: bais-public-key)
+  --private-secret-name <name>    KV secret name for private key (default: bais-private-key)
   --passphrase <value>            Key passphrase (default: empty)
   --force                         Overwrite existing local key files
   --help                          Show this help
@@ -39,8 +39,8 @@ Examples:
     --subscription 00000000-0000-0000-0000-000000000000 \
     --output-dir ./ssh/keys \
     --key-name bais-sftp-demo \
-    --public-secret-name bais-emulator-public-key \
-    --private-secret-name bais-emulator-private-key
+    --public-secret-name bais-public-key \
+    --private-secret-name bais-private-key
 EOF
 }
 
@@ -55,8 +55,8 @@ KEYVAULT_NAME=""
 SUBSCRIPTION=""
 OUTPUT_DIR="./ssh"
 KEY_NAME="bais-sftp"
-PUBLIC_SECRET_NAME="bais-emulator-public-key"
-PRIVATE_SECRET_NAME="bais-emulator-private-key"
+PUBLIC_SECRET_NAME="bais-public-key"
+PRIVATE_SECRET_NAME="bais-private-key"
 PASSPHRASE=""
 FORCE="false"
 
