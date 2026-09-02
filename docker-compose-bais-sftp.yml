@@ -8,3 +8,4 @@ services:
     command: >
       BTEckoh-report::1001
       CAPS-report::1002
+      AllPay::1003

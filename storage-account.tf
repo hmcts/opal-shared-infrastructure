@@ -82,6 +82,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "caps-report"
       access_type = "private"
+    },
+    {
+      name        = "allpay"
+      access_type = "private"
     }
   ]
 
@@ -128,4 +132,10 @@ resource "azurerm_key_vault_secret" "caps_report_container_name" {
   name         = "caps-report-container-name"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = "caps-report"
+}
+
+resource "azurerm_key_vault_secret" "allpay_container_name" {
+  name         = "allpay-container-name"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = "allpay-report"
 }
