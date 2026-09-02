@@ -14,7 +14,7 @@ locals {
 }
 
 data "azurerm_key_vault_secret" "bais_emulator_public_key" {
-  name         = "bais-public-key"
+  name         = "bais-emulator-public-key"
   count        = local.isNotProdCount
   key_vault_id = module.opal_key_vault.key_vault_id
 }
@@ -59,7 +59,7 @@ resource "azurerm_storage_account_local_user" "bais_emulator_users" {
   home_directory       = lookup(each.value, "container_name")
 
   ssh_authorized_key {
-    description = "bais-public-key"
+    description = "bais-emulator-public-key"
     key         = trimspace(data.azurerm_key_vault_secret.bais_emulator_public_key[0].value)
   }
 
@@ -79,7 +79,7 @@ resource "azurerm_storage_account_local_user" "bais_emulator_users" {
 
 resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_connection_strings" {
   for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
-  name         = "bais-${each.value.user_name}-${each.value.container_name}-sftp-connection-string"
+  name         = "bais-emulator-${each.value.user_name}-${each.value.container_name}-sftp-connection-string"
   key_vault_id = module.opal_key_vault.key_vault_id
   value = format(
     "sftp://%s.%s@%s.blob.core.windows.net",
@@ -91,7 +91,7 @@ resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_connection_strings"
 
 resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_host" {
   count        = local.isNotProdCount
-  name         = "bais-sftp-connection-host"
+  name         = "bais-emulator-sftp-connection-host"
   key_vault_id = module.opal_key_vault.key_vault_id
   value = trimsuffix(
     trimprefix(module.opal_file_handler_service_bais_emulator[0].storageaccount_primary_blob_endpoint, "https://"),
@@ -100,14 +100,14 @@ resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_host" {
 }
 resource "azurerm_key_vault_secret" "bais_emulator_sftp_connection_port" {
   count        = local.isNotProdCount
-  name         = "bais-sftp-connection-port"
+  name         = "bais-emulator-sftp-connection-port"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = "22"
 }
 
 resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_username" {
   for_each     = local.isNotProdCount == 1 ? local.bais_emulator_user_mappings : {}
-  name         = "bais-sftp-${each.value.container_name}-username"
+  name         = "bais-emulator-sftp-${each.value.container_name}-username"
   key_vault_id = module.opal_key_vault.key_vault_id
   value = format(
     "%s.%s",
@@ -118,14 +118,14 @@ resource "azurerm_key_vault_secret" "bais_emulator_user_sftp_username" {
 
 resource "azurerm_key_vault_secret" "bais_emulator_storage_account_name" {
   count        = local.isNotProdCount
-  name         = "bais-storage-account-name"
+  name         = "bais-emulator-storage-account-name"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_name
 }
 
 resource "azurerm_key_vault_secret" "bais_emulator_storageaccount_primary_blob_endpoint" {
   count        = local.isNotProdCount
-  name         = "bais-storage-account-primary-blob-endpoint"
+  name         = "bais-emulator-storage-account-primary-blob-endpoint"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = module.opal_file_handler_service_bais_emulator[0].storageaccount_primary_blob_endpoint
 }
