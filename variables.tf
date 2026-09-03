@@ -85,6 +85,10 @@ variable "bais_emulator_sftp_mappings" {
     {
       container_name = "allpay-report"
       user_name      = "allpay"
+    },
+    {
+      container_name = "natwest"
+      user_name      = "natwest"
     }
   ]
 }

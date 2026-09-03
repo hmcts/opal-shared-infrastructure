@@ -86,6 +86,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "allpay"
       access_type = "private"
+    },
+    {
+      name        = "natwest"
+      access_type = "private"
     }
   ]
 
@@ -138,4 +142,10 @@ resource "azurerm_key_vault_secret" "allpay_container_name" {
   name         = "allpay-container-name"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = "allpay-report"
+}
+
+resource "azurerm_key_vault_secret" "natwest_container_name" {
+  name         = "natwest-container-name"
+  key_vault_id = module.opal_key_vault.key_vault_id
+  value        = "natwest-report"
 }
