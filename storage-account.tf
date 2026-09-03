@@ -147,5 +147,5 @@ resource "azurerm_key_vault_secret" "allpay_container_name" {
 resource "azurerm_key_vault_secret" "natwest_container_name" {
   name         = "natwest-container-name"
   key_vault_id = module.opal_key_vault.key_vault_id
-  value        = "natwest-report"
+  value        = "natwest"
 }
