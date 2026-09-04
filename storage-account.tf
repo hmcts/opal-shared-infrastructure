@@ -82,6 +82,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "caps-report"
       access_type = "private"
+    },
+    {
+      name        = "dwp"
+      access_type = "private"
     }
   ]
 
