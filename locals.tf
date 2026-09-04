@@ -5,7 +5,7 @@ locals {
   db_port      = 5432
   db_version   = 17
   db_collation = "en_GB.utf8"
-  default_envs = ["demo", "ithc", "perftest", "test", "stg"]
+  default_envs = ["demo", "ithc", "perftest", "test", "stg", "prod"]
 
   legacy_postgresql_default_server_configuration = [
     {
@@ -61,7 +61,7 @@ locals {
           }
         ] : []
       )
-      pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
+      pgsql_server_configuration = var.env == "prod" ? local.legacy_postgresql_fdw_server_configuration : local.legacy_postgresql_default_server_configuration
     }
 
     "user-service" = {
@@ -71,7 +71,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-user-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = var.env == "prod" ? local.legacy_postgresql_fdw_server_configuration : local.legacy_postgresql_default_server_configuration
     }
 
     "file-handler-service" = {
@@ -81,7 +81,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-file-handler-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      pgsql_server_configuration = var.env == "prod" ? local.legacy_postgresql_fdw_server_configuration : local.legacy_postgresql_default_server_configuration
     }
 
     "logging-service" = {
@@ -91,7 +91,7 @@ locals {
       collation                  = local.db_collation
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-logging-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
+      pgsql_server_configuration = var.env == "prod" ? local.legacy_postgresql_fdw_server_configuration : local.legacy_postgresql_default_server_configuration
     }
 
     "log-audit-service" = {
