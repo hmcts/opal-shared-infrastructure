@@ -86,6 +86,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "allpay"
       access_type = "private"
+    },
+    {
+      name        = "natwest"
+      access_type = "private"
     }
   ]
 
