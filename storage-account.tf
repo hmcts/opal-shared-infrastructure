@@ -90,6 +90,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "natwest"
       access_type = "private"
+    },
+    {
+      name        = "bteckoh"
+      access_type = "private"
     }
   ]
 
