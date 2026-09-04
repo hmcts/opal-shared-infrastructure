@@ -46,7 +46,7 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 
 ssh-keygen -t rsa -b 4096 -m PEM -C "bais-emulator" -f "$PRIVATE_KEY_PATH" -N "" >/dev/null
 
-for user_name in BTEckoh-report CAPS-report AllPay NATWEST; do
+for user_name in BTEckoh-report CAPS-report AllPay NATWEST BARCLAYCARD; do
   key_dir="$REPO_ROOT/bais-emulator/data/$user_name/.ssh/keys"
   install -d -m 0755 "$key_dir"
   install -m 0644 "$PUBLIC_KEY_PATH" "$key_dir/bais-sftp-key.pub"
