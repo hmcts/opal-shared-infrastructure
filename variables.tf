@@ -39,6 +39,9 @@ variable "capacity" {
 
 variable "aks_subscription_id" {}
 
+variable "soc_subscription_id" {}
+
+variable "cnp_subscription_id" {}
 
 variable "developers_group" {
   default = "DTS SDS Developers"
@@ -48,20 +51,6 @@ variable "service_bus_sku" {
   default = "Standard"
 }
 
-variable "redis_family" {
-  default     = "C"
-  description = "The SKU family/pricing group to use. Valid values are `C` (for Basic/Standard SKU family) and `P` (for Premium). Use P for higher availability, but beware it costs a lot more."
-}
-
-variable "redis_sku_name" {
-  default     = "Basic"
-  description = "The SKU of Redis to use. Possible values are `Basic`, `Standard` and `Premium`."
-}
-
-variable "redis_capacity" {
-  default     = "1"
-  description = "The size of the Redis cache to deploy. Valid values are 1, 2, 3, 4, 5"
-}
 variable "valcon_servicebus_topic_names" {
   description = "List of Valcon Service Bus topic names to create. One Key Vault secret per topic is also created."
   type        = list(string)
@@ -92,6 +81,14 @@ variable "bais_emulator_sftp_mappings" {
     {
       container_name = "caps-report"
       user_name      = "capsreport"
+    },
+    {
+      container_name = "allpay-report"
+      user_name      = "allpay"
+    },
+    {
+      container_name = "natwest"
+      user_name      = "natwest"
     },
     {
       container_name = "dwp"

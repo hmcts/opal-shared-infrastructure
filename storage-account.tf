@@ -84,6 +84,14 @@ module "opal_file_handler_service_file_store" {
       access_type = "private"
     },
     {
+      name        = "allpay"
+      access_type = "private"
+    },
+    {
+      name        = "natwest"
+      access_type = "private"
+    },
+    {
       name        = "dwp"
       access_type = "private"
     }
@@ -120,16 +128,4 @@ resource "azurerm_key_vault_secret" "opal_file_handler_service_file_store_primar
   name         = "opal-file-handler-service-file-store-connection-string"
   key_vault_id = module.opal_key_vault.key_vault_id
   value        = module.opal_file_handler_service_file_store.storageaccount_primary_connection_string
-}
-
-resource "azurerm_key_vault_secret" "bteckoh_report_container_name" {
-  name         = "bteckoh-report-container-name"
-  key_vault_id = module.opal_key_vault.key_vault_id
-  value        = "bteckoh-report"
-}
-
-resource "azurerm_key_vault_secret" "caps_report_container_name" {
-  name         = "caps-report-container-name"
-  key_vault_id = module.opal_key_vault.key_vault_id
-  value        = "caps-report"
 }
