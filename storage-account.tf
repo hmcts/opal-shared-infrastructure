@@ -94,6 +94,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "bteckoh"
       access_type = "private"
+    },
+    {
+      name        = "barclaycard"
+      access_type = "private"
     }
   ]
 
