@@ -5,7 +5,7 @@ locals {
   db_port      = 5432
   db_version   = 17
   db_collation = "en_GB.utf8"
-  default_envs = ["demo", "ithc", "perftest", "test", "stg", "prod"]
+  default_envs = ["demo", "ithc", "perftest", "test", "stg"]
 
   legacy_postgresql_default_server_configuration = [
     {
