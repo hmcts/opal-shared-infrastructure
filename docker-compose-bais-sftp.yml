@@ -11,4 +11,5 @@ services:
       AllPay::1003
       NATWEST::1004
       BTEckoh::1005
-      DWP::1006
+      BARCLAYCARD::1006
+      DWP::1007
