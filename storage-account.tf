@@ -17,6 +17,10 @@ module "opal_storage" {
     {
       name        = "reports"
       access_type = "private"
+    },
+    {
+      name        = "marston"
+      access_type = "private"
     }
   ]
 
