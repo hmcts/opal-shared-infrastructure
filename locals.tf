@@ -1,4 +1,7 @@
 locals {
+  # Entra groups are owned by azure-access; temporary membership by access packages.
+  postgresql_reader_group_name = var.env == "prod" ? "DTS JIT Access opal DB Reader SC" : "DTS JIT Access opal DB Reader NonProd"
+
   private_endpoint_rg_name   = "ss-${var.env}-network-rg"
   private_endpoint_vnet_name = "ss-${var.env}-vnet"
 
