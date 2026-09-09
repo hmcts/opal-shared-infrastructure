@@ -28,7 +28,9 @@ module "opal_consolidated_postgresql" {
   enable_read_only_group_access = true
   enable_write_group_access     = false
   reader_group_name             = local.postgresql_reader_group_name
-  auto_grow_enabled             = true
+  # Reapply after group creation even where the production group name is unchanged.
+  force_user_permissions_trigger = "opal-db-reader-access-v1"
+  auto_grow_enabled              = true
 
   pgsql_databases = [
     for db in values(local.consolidated_postgresql_databases) : {

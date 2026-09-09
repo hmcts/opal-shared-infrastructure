@@ -36,6 +36,9 @@ this change until the required module inputs exist on upstream `master`.
 Only the existing configured databases and schemas are covered (`public` is
 the module default). This does not adopt the deliberately unmanaged `gctest`
 database or change any database/server names, storage or network settings.
+The fixed `opal-db-reader-access-v1` permissions trigger also replays grants
+after group creation when the Production reader name is unchanged. It is
+constant across reruns (not a timestamp), so it does not force repeated changes.
 Changing the reader group reruns the deterministic permission provisioner;
 it does not revoke historical SDS reader grants or remove existing roles.
 A separate reviewed change is required if historical access must be removed.

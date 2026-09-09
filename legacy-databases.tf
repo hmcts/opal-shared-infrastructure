@@ -27,6 +27,8 @@ module "legacy_postgresql" {
   enable_read_only_group_access = true
   enable_write_group_access     = false
   reader_group_name             = local.postgresql_reader_group_name
+  # Reapply after group creation even where the production group name is unchanged.
+  force_user_permissions_trigger = "opal-db-reader-access-v1"
 
   pgsql_databases            = each.value.pgsql_databases
   pgsql_server_configuration = each.value.pgsql_server_configuration
