@@ -23,7 +23,7 @@ module "legacy_postgresql" {
   admin_user_object_id = var.jenkins_AAD_objectId
 
   enable_read_only_group_access  = true
-  enable_write_group_access      = false
+  enable_write_group_access      = var.env == "prod"
   force_user_permissions_trigger = "opal-db-reader-access-v1"
 
   pgsql_databases            = each.value.pgsql_databases
