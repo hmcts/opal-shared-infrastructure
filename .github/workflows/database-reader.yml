@@ -1,0 +1,34 @@
+name: OPAL database reader grants
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - bin/configure_database_reader.py
+      - tests/test_database_reader.py
+      - database-reader-access.tf
+      - .github/workflows/database-reader.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test idempotent SQL and reader-only privileges
+        env:
+          OPAL_PG_INTEGRATION: '1'
+          PGHOST: localhost
+          PGPORT: '5432'
+        run: python3 -m unittest discover -s tests -p test_database_reader.py -v

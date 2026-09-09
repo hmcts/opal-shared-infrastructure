@@ -12,7 +12,7 @@ module "legacy_postgresql" {
     azurerm.postgres_network = azurerm
   }
 
-  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=DTSPO-30107-additional-postgres-admins"
 
   env                  = var.env
   product              = var.product
@@ -21,14 +21,6 @@ module "legacy_postgresql" {
   collation            = local.db_collation
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
-
-  # Preserve the administrator mapping already deployed from the migration branch.
-  preserve_legacy_jenkins_admin = true
-  enable_read_only_group_access = true
-  enable_write_group_access     = false
-  reader_group_name             = local.postgresql_reader_group_name
-  # Reapply after group creation even where the production group name is unchanged.
-  force_user_permissions_trigger = "opal-db-reader-access-v1"
 
   pgsql_databases            = each.value.pgsql_databases
   pgsql_server_configuration = each.value.pgsql_server_configuration

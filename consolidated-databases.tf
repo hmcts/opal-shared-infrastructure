@@ -11,7 +11,7 @@ module "opal_consolidated_postgresql" {
     azurerm.postgres_network = azurerm
   }
 
-  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=DTSPO-30107-additional-postgres-admins"
 
   name                 = "opal-consolidated-db"
   env                  = var.env
@@ -22,15 +22,7 @@ module "opal_consolidated_postgresql" {
   collation            = local.db_collation
   pgsql_version        = local.db_version
   admin_user_object_id = var.jenkins_AAD_objectId
-
-  # Preserve the administrator mapping already deployed from the migration branch.
-  preserve_legacy_jenkins_admin = true
-  enable_read_only_group_access = true
-  enable_write_group_access     = false
-  reader_group_name             = local.postgresql_reader_group_name
-  # Reapply after group creation even where the production group name is unchanged.
-  force_user_permissions_trigger = "opal-db-reader-access-v1"
-  auto_grow_enabled              = true
+  auto_grow_enabled    = true
 
   pgsql_databases = [
     for db in values(local.consolidated_postgresql_databases) : {

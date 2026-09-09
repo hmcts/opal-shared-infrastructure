@@ -2,59 +2,57 @@
 This repository contains the shared common infrastructure components for Opal ?!
 
 
-## OPAL database reader access packages
+## OPAL-owned database reader access
 
-Both the service-owned and consolidated PostgreSQL module calls use OPAL-only
-Entra reader groups:
+No changes to the upstream PostgreSQL module are required. Both existing
+module sources, inputs, administrator resources and ownership remain unchanged.
+`database-reader-access.tf` adds one OPAL-owned grant provisioner per active
+server, covering its configured databases:
 
-| Environment | Database login group |
+| Environment | Reader group |
 | --- | --- |
-| Production (`prod`) | `DTS JIT Access opal DB Reader SC` |
-| All configured non-production environments | `DTS JIT Access opal DB Reader NonProd` |
+| `prod` | `DTS JIT Access opal DB Reader SC` |
+| Non-production | `DTS JIT Access opal DB Reader NonProd` |
 
-The groups are created in `hmcts/azure-access`. Time-limited memberships are
-managed in `hmcts/azure-access-packages`, not by direct membership of the
-reader groups in `prod_users.yml`. The Production requestor group starts empty
-until the approved SC cohort is confirmed. Non-production requestors are
-members of `DTS Green on Black`. Reader packages do not grant writer/admin
-privileges or network/bastion access.
+Create the groups through `azure-access` first. The grant step uses the
+pipeline's existing Entra administrator identity. Its short-lived PostgreSQL
+token is captured in memory and passed only in the psql child environment;
+no password/token is placed in arguments, files or output. Python 3, Azure CLI
+and psql are required on the existing Jenkins agent.
 
-### Deployment order
+`bin/configure_database_reader.py` creates the group-linked non-admin role
+only if absent and rejects a conflicting role/object-ID mapping. A transaction
+advisory lock in postgres serialises concurrent creation on a server. It then
+uses the existing application owner role to grant CONNECT, schema USAGE and
+SELECT on public tables, including default SELECT for future tables created
+by that configured owner. It grants no writes, DDL or administrator roles and
+does not reassign ownership. SQL errors fail the provisioner; a retry safely
+replays previously committed grants. No destroy provisioner is defined.
 
-1. Merge/apply the Azure group definitions.
-2. Merge the PostgreSQL module reader-group override and opt-in legacy Jenkins
-   administrator preservation into its `master` branch.
-3. Merge this configuration into `master`, then promote using the existing
-   environment-branch process. Do not cherry-pick fixes directly to perftest.
-4. Apply database permissions and verify logins before publishing the packages.
+The Terraform triggers are deterministic: script hash, server, database list,
+reader name/object ID, existing administrator ID and a fixed grants revision.
+They are not timestamps. A subsequent unchanged apply does not rerun the step.
+Historical SDS reader grants are not revoked; removing old access is separate.
 
-Both module calls explicitly preserve the existing legacy Jenkins admin,
-enable reader access and disable writer access. The `master` module source
-is already approved by the Jenkins infrastructure allowlist. Do not merge
-this change until the required module inputs exist on upstream `master`.
+### Rollout and verification
 
-Only the existing configured databases and schemas are covered (`public` is
-the module default). This does not adopt the deliberately unmanaged `gctest`
-database or change any database/server names, storage or network settings.
-The fixed `opal-db-reader-access-v1` permissions trigger also replays grants
-after group creation when the Production reader name is unchanged. It is
-constant across reruns (not a timestamp), so it does not force repeated changes.
-Changing the reader group reruns the deterministic permission provisioner;
-it does not revoke historical SDS reader grants or remove existing roles.
-A separate reviewed change is required if historical access must be removed.
+1. Merge/apply the group definitions in azure-access.
+2. Merge this PR to master and promote through existing environment branches.
+   Review plans for OPAL grant provisioners only, with no module resource changes.
+3. Apply and validate reader logins before publishing the access packages.
+4. Publish the separate production/non-production reader packages. Production
+   eligibility starts empty until the approved SC cohort is confirmed;
+   non-production eligibility uses DTS Green on Black.
 
-### Acceptance checks
+Validate SELECT succeeds and INSERT/UPDATE/DELETE/DDL fail for a package-only
+account; validate future tables using the actual migration owner. Non-public
+schemas or other table-creator roles require explicit follow-up configuration.
+No unmanaged databases (including gctest) are adopted. Verify assignment and
+expiry using fresh connections; existing sessions need not terminate on expiry.
+Require a post-apply no-change plan. The fines Test server must be healthy
+before its grant/login checks can succeed.
 
-- Inspect plans for preserved database/server and administrator identities;
-  only intended group-permission provisioner replacements should be present.
-- Verify SELECT succeeds and INSERT/UPDATE/DELETE/DDL are rejected for a
-  package-only account on each intended database.
-- Verify future-table SELECT using the actual migration/table-creator role;
-  the existing module's default-privileges SQL runs as the provisioning user
-  and is not proof that every application's object-owner defaults are covered.
-- Verify package assignment/expiry and cross-environment isolation using new
-  connections; an existing database session need not terminate on expiry.
-- Require a subsequent no-change plan after apply.
-
-The fines Test server must be healthy before its apply/login checks can pass.
-No deployment is performed by the preparation of these PRs.
+The local unit tests exercise failure handling and token confinement. The
+PostgreSQL integration test checks repeated execution, wrong-group rejection,
+existing/future table reads and denied writes against an isolated database;
+it stubs Azure's pgaadauth functions and does not replace a live Entra login test.
