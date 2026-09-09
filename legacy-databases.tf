@@ -22,6 +22,10 @@ module "legacy_postgresql" {
   common_tags          = var.common_tags
   admin_user_object_id = var.jenkins_AAD_objectId
 
+  enable_read_only_group_access  = true
+  enable_write_group_access      = false
+  force_user_permissions_trigger = "opal-db-reader-access-v1"
+
   pgsql_databases            = each.value.pgsql_databases
   pgsql_server_configuration = each.value.pgsql_server_configuration
   pgsql_version              = local.db_version
