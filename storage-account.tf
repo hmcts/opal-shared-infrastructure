@@ -106,6 +106,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "jacobs"
       access_type = "private"
+    },
+    {
+      name        = "dwp"
+      access_type = "private"
     }
   ]
 
