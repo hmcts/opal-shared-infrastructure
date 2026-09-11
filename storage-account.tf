@@ -104,6 +104,10 @@ module "opal_file_handler_service_file_store" {
       access_type = "private"
     },
     {
+      name        = "jacobs"
+      access_type = "private"
+    },
+    {
       name        = "cder"
       access_type = "private"
     }
