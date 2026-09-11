@@ -22,6 +22,7 @@ module "opal_consolidated_postgresql" {
   collation            = local.db_collation
   pgsql_version        = local.db_version
   admin_user_object_id = var.jenkins_AAD_objectId
+  auto_grow_enabled    = true
 
   pgsql_databases = [
     for db in values(local.consolidated_postgresql_databases) : {

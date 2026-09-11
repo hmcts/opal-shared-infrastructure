@@ -91,12 +91,20 @@ variable "bais_emulator_sftp_mappings" {
       user_name      = "natwest"
     },
     {
+      container_name = "marston"
+      user_name      = "marston"
+    },
+    {
       container_name = "bteckoh"
       user_name      = "bteckoh"
     },
     {
       container_name = "barclaycard"
       user_name      = "barclaycard"
+    },
+    {
+      container_name = "jacobs"
+      user_name      = "jacobs"
     },
     {
       container_name = "dwp"
