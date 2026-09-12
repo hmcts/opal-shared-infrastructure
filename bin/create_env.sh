@@ -115,6 +115,9 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo ""
   echo "## Opal Test User Credentials"
   echo "OPAL_TEST_USER_PASSWORD=$(az keyvault secret show --vault-name opal-stg --name OpalTestUserPassword | jq -r .value)"
+  echo ""
+  echo "## Default azurite connection string, this AccountKey is not sensitive data."
+  echo "AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"
 
 } > "$ENV_FILE"
 
