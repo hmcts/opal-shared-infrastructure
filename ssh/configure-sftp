@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+sed -i '/^ChrootDirectory %h$/d' /etc/ssh/sshd_config
+
+for username in \
+    BTEckoh-report CAPS-report AllPay NATWEST \
+    BTEckoh BARCLAYCARD MARSTON Jacobs
+do
+    chown "$(id -u "$username")":users "/home/$username"
+    chmod 755 "/home/$username"
+done
