@@ -102,6 +102,14 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "barclaycard"
       access_type = "private"
+    },
+    {
+      name        = "jacobs"
+      access_type = "private"
+    },
+    {
+      name        = "dwp"
+      access_type = "private"
     }
   ]
 
