@@ -110,6 +110,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "dwp"
       access_type = "private"
+    },
+    {
+      name        = "cder"
+      access_type = "private"
     }
   ]
 
