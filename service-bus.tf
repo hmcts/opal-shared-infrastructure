@@ -2,18 +2,14 @@ module "servicebus-namespace" {
   providers = {
     azurerm.private_endpoint = azurerm.private_endpoint
   }
-  source                       = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=PO-10687-add-managed-identity-support"
-  name                         = "${var.product}-servicebus-${var.env}"
-  resource_group_name          = azurerm_resource_group.opal_resource_group.name
-  location                     = var.location
-  env                          = var.env
-  common_tags                  = var.common_tags
-  sku                          = var.service_bus_sku
-  project                      = var.businessArea
-  enable_managed_identity      = var.enable_managed_identity
-  managed_identity_resource_id = var.managed_identity_resource_id
-  managed_identity_object_id   = var.managed_identity_object_id
-  role_assignments             = ["Azure Service Bus Data Owner"]
+  source              = "git@github.com:hmcts/terraform-module-servicebus-namespace?ref=4.x"
+  name                = "${var.product}-servicebus-${var.env}"
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  location            = var.location
+  env                 = var.env
+  common_tags         = var.common_tags
+  sku                 = var.service_bus_sku
+  project             = var.businessArea
 }
 
 output "sb_primary_send_and_listen_connection_string" {
