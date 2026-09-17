@@ -5,6 +5,7 @@ services:
       - "2222:22"
     volumes:
       - ./bais-emulator/data:/home
+      - ./ssh/configure-sftp:/etc/sftp.d/configure-sftp:ro
     command: >
       BTEckoh-report::1001
       CAPS-report::1002
