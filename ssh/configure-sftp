@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+sed -i 's/^ChrootDirectory %h$/ChrootDirectory none/' /etc/ssh/sshd_config
+
+for username in \
+    BTEckoh-report CAPS-report AllPay NATWEST \
+    BTEckoh BARCLAYCARD MARSTON Jacobs DWP CDER
+do
+    chown "$username:users" "/home/$username"
+    chmod 700 "/home/$username"
+done
+
+/usr/sbin/sshd -t

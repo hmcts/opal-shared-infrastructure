@@ -22,6 +22,11 @@ module "opal_consolidated_postgresql" {
   collation            = local.db_collation
   pgsql_version        = local.db_version
   admin_user_object_id = var.jenkins_AAD_objectId
+  auto_grow_enabled    = true
+
+  enable_read_only_group_access  = true
+  enable_write_group_access      = var.env == "prod"
+  force_user_permissions_trigger = "opal-db-reader-access-v1"
 
   pgsql_databases = [
     for db in values(local.consolidated_postgresql_databases) : {

@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure")
+@Library("Infrastructure@2.8.0")
 
 def product = "opal"
 def branchesToSync = ['demo', 'perftest', 'ithc']

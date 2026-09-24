@@ -22,22 +22,40 @@ data "azurerm_subnet" "iaas_private_endpoints" {
   name                 = "iaas"
 }
 
+# Cross-subscription VM providers consume platform-managed resources. The
+# deployment identity must not register providers or enumerate the subscription
+# provider catalogue; AzureRM 4.x requires both settings below to skip that lookup.
 provider "azurerm" {
   alias = "soc"
-  features {}
-  subscription_id = "8ae5b3b6-0b12-4888-b894-4cec33c92292"
+  features {
+    enhanced_validation {
+      resource_providers = false
+    }
+  }
+  subscription_id                 = var.soc_subscription_id
+  resource_provider_registrations = "none"
 }
 
 provider "azurerm" {
   alias = "cnp"
-  features {}
-  subscription_id = "1c4f0704-a29e-403d-b719-b90c34ef14c9"
+  features {
+    enhanced_validation {
+      resource_providers = false
+    }
+  }
+  subscription_id                 = var.cnp_subscription_id
+  resource_provider_registrations = "none"
 }
 
 provider "azurerm" {
   alias = "dcr"
-  features {}
-  subscription_id = "1c4f0704-a29e-403d-b719-b90c34ef14c9"
+  features {
+    enhanced_validation {
+      resource_providers = false
+    }
+  }
+  subscription_id                 = var.cnp_subscription_id
+  resource_provider_registrations = "none"
 }
 
 
