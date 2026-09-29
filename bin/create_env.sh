@@ -2,6 +2,7 @@
 set -e
 
 command -v az >/dev/null 2>&1 || { echo >&2 "❌ This script requires you to have the Azure CLI installed (\`brew install azure-cli\`) but it's not installed. Aborting."; exit 1; }
+command -v openssl >/dev/null 2>&1 || { echo >&2 "❌ This script requires OpenSSL but it is not installed. Aborting."; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/../docker-files/.env.shared"
@@ -55,6 +56,7 @@ echo "Writing secrets to $ENV_FILE..."
 aad_client_id="$(az keyvault secret show --vault-name opal-stg --name AzureADClientId | jq -r .value)"
 aad_client_secret="$(az keyvault secret show --vault-name opal-stg --name AzureADClientSecret | jq -r .value)"
 aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTenantId | jq -r .value)"
+azurite_account_key="$(openssl rand -base64 64 | tr -d '\n')"
 
 {
   echo "## Azure Credentials"
@@ -71,6 +73,19 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo ""
   echo "## Opal application configuration"
   echo "REDIS_CONNECTION_STRING=redis://host.docker.internal:6379"
+  echo "AZURITE_ACCOUNTS=devstoreaccount1:$azurite_account_key"
+  echo "AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=$azurite_account_key;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"
+  echo "BAIS_SFTP_CONNECTION_HOST=sftp"
+  echo "BAIS_SFTP_CONNECTION_PORT=22"
+  echo "BAIS_SFTP_CAPS_REPORT_USERNAME=CAPS-report"
+  echo "BAIS_SFTP_BTECKOH_REPORT_USERNAME=BTEckoh-report"
+  echo "BAIS_SFTP_ALLPAY_USERNAME=AllPay"
+  echo "BAIS_SFTP_DWP_USERNAME=DWP"
+  echo "BAIS_SFTP_NATWEST_USERNAME=NATWEST"
+  echo "BAIS_SFTP_BARCLAYCARD_USERNAME=BARCLAYCARD"
+  echo "BAIS_SFTP_BTECKOH_USERNAME=BTEckoh"
+  echo "BAIS_SFTP_JACOBS_USERNAME=Jacobs"
+  echo "BAIS_SFTP_CDER_USERNAME=CDER"
   echo ""
   echo "# legacy config"
   echo "DEFAULT_APP_MODE=opal"
@@ -112,6 +127,7 @@ aad_tenant_id="$(az keyvault secret show --vault-name opal-stg --name AzureADTen
   echo "RELEASE_1C_CPP_ENFORCEMENT_ENABLED=true"
   echo "RELEASE_1C_CPP_ENABLED=true"
   echo "RELEASE_1C_PRINTING_ENABLED=true"
+  echo "BTECKOH_REPORT_FILE_TRANSFER_JOB_ENABLED=true"
   echo ""
   echo "## Opal Test User Credentials"
   echo "OPAL_TEST_USER_PASSWORD=$(az keyvault secret show --vault-name opal-stg --name OpalTestUserPassword | jq -r .value)"

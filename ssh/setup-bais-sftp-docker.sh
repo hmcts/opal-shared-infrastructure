@@ -37,7 +37,7 @@ done
 
 require_cmd ssh-keygen
 
-REPO_ROOT="$(cd "$(pwd)/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMP_DIR="$(mktemp -d)"
 PUBLIC_KEY_PATH="$TEMP_DIR/bais-sftp-key.pub"
 PRIVATE_KEY_PATH="$TEMP_DIR/bais-sftp-key"
