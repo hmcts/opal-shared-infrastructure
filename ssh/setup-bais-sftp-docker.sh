@@ -55,6 +55,7 @@ for user_name in BTEckoh-report CAPS-report AllPay NATWEST BTEckoh BARCLAYCARD M
   echo "Installed public/private key for $user_name."
 done
 
-export BAIS_SFTP_PRIVATE_KEY="$(<"$PRIVATE_KEY_PATH")"
+BAIS_SFTP_PRIVATE_KEY="$(<"$PRIVATE_KEY_PATH")"
+export BAIS_SFTP_PRIVATE_KEY
 
 echo "Done."
