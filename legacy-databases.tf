@@ -12,7 +12,7 @@ module "legacy_postgresql" {
     azurerm.postgres_network = azurerm
   }
 
-  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=DTSPO-30107-additional-postgres-admins"
+  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
 
   env                  = var.env
   product              = var.product
