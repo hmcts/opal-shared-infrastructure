@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 command -v az >/dev/null 2>&1 || { echo >&2 "❌ This script requires you to have the Azure CLI installed (\`brew install azure-cli\`) but it's not installed. Aborting."; exit 1; }
 command -v openssl >/dev/null 2>&1 || { echo >&2 "❌ This script requires OpenSSL but it is not installed. Aborting."; exit 1; }
@@ -66,6 +66,8 @@ azurite_account_key="$(openssl rand -base64 64 | tr -d '\n')"
   echo "AZURE_AD_CLIENT_SECRET=$aad_client_secret"
   echo "AAD_TENANT_ID=$aad_tenant_id"
   echo "AZURE_AD_TENANT_ID=$aad_tenant_id"
+  echo "OPAL_SYSTEM_USER_CLIENT_ID=$(az keyvault secret show --vault-name opal-stg --name opal-system-user-client-id | jq -r .value)"
+  echo "OPAL_SYSTEM_USER_CLIENT_SECRET=$(az keyvault secret show --vault-name opal-stg --name opal-system-user-client-secret | jq -r .value)"
   echo ""
   echo "## Launch Darkly Credentials"
   echo "LAUNCH_DARKLY_ENABLED=false"
