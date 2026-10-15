@@ -89,7 +89,7 @@
             }
           },
           {
-            "Name": "publish-draft-account",
+            "Name": "publish-draft-account-queue",
             "Properties": {
               "DeadLetteringOnMessageExpiration": false,
               "DefaultMessageTimeToLive": "PT1H",
