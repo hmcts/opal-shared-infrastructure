@@ -138,3 +138,17 @@ resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preproc
   value        = module.servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-publish-draft-account" {
+  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                = "publish-draft-account"
+  namespace_name      = module.servicebus-namespace.name
+  resource_group_name = azurerm_resource_group.opal_resource_group.name
+  depends_on          = [module.servicebus-namespace]
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queue-name" {
+  name         = "servicebus-publish-draft-account-queue-name"
+  value        = module.servicebus-queue-publish-draft-account.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
