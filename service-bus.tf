@@ -149,6 +149,6 @@ module "servicebus-queue-publish-draft-account" {
 
 resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queue-name" {
   name         = "servicebus-publish-draft-account-queue-name"
-  value        = module.servicebus-queue-publish-draft-account-queue.name
+  value        = module.servicebus-queue-publish-draft-account.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
