@@ -103,7 +103,7 @@
             }
           },
           {
-            "Name": "acknowledgements-queue",
+            "Name": "VPFPO-acknowledgements-queue ",
             "Properties": {
               "DeadLetteringOnMessageExpiration": false,
               "DefaultMessageTimeToLive": "PT1H",
