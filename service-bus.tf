@@ -39,11 +39,12 @@ resource "azurerm_key_vault_secret" "servicebus_primary_shared_access_key" {
 }
 
 module "servicebus-queue-logging-pdpl" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "logging-pdpl"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "logging-pdpl"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-logging-pdpl-queue-name" {
@@ -53,11 +54,12 @@ resource "azurerm_key_vault_secret" "servicebus-queue-logging-pdpl-queue-name" {
 }
 
 module "servicebus-queue-report" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "report"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "report"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-report-queue-name" {
@@ -67,11 +69,12 @@ resource "azurerm_key_vault_secret" "servicebus-queue-report-queue-name" {
 }
 
 module "servicebus-queue-auto-payments-process-interface-files" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "auto-payments-process-interface-files"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "auto-payments-process-interface-files"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-auto-payments-process-interface-files-queue-name" {
@@ -82,13 +85,14 @@ resource "azurerm_key_vault_secret" "servicebus-queue-auto-payments-process-inte
 
 
 module "servicebus-queue-allocate-tills" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "allocate-tills"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  requires_session    = true
-  max_delivery_count  = "3"
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "allocate-tills"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  requires_session           = true
+  max_delivery_count         = "3"
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-allocate-tills-queue-name" {
@@ -98,11 +102,12 @@ resource "azurerm_key_vault_secret" "servicebus-queue-allocate-tills-queue-name"
 }
 
 module "servicebus-queue-hmrc-checks" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "hmrc-checks"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "hmrc-checks"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-hmrc-checks-queue-name" {
@@ -112,11 +117,12 @@ resource "azurerm_key_vault_secret" "servicebus-queue-hmrc-checks-queue-name" {
 }
 
 module "servicebus-queue-banking-interfaces-preprocess-interface-file-fines" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "banking-interfaces-preprocess-interface-file-fines"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "banking-interfaces-preprocess-interface-file-fines"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preprocess-interface-file-fines-queue-name" {
@@ -126,11 +132,12 @@ resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preproc
 }
 
 module "servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "banking-interfaces-preprocess-interface-file-maintenance"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "banking-interfaces-preprocess-interface-file-maintenance"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance-queue-name" {
@@ -140,16 +147,32 @@ resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preproc
 }
 
 module "servicebus-queue-rm-publish-draft-casefile" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
-  name                = "rm-publish-draft-casefile-queue"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  name                       = "rm-publish-draft-casefile-queue"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-rm-publish-draft-casefile-queue-name" {
   name         = "servicebus-rm-publish-draft-casefile-queue-name"
   value        = module.servicebus-queue-rm-publish-draft-casefile.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+module "opal-reference-data-topic" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
+  name                       = "opal-reference-data-topic"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.csds_managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-opal-reference-data-topic-name" {
+  name         = "servicebus-opal-reference-data-topic-name"
+  value        = module.opal-reference-data-topic.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 

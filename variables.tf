@@ -50,6 +50,10 @@ variable "managed_identity_resource_id" {
 variable "managed_identity_object_id" {
   default = null
 }
+
+variable "csds_managed_identity_object_id" {
+  default = ""
+}
 variable "enable_managed_identity" {
   default = false
 }
