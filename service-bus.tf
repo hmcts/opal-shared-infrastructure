@@ -177,14 +177,14 @@ resource "azurerm_key_vault_secret" "servicebus-opal-reference-data-topic-name" 
 }
 
 module "opal-fines-reference-data-subscription" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-subscription?ref=master"
-  name                       = "opal-fines-reference-data-subscription"
-  namespace_name             = module.servicebus-namespace.name
-  topic_name                 = module.opal-reference-data-topic.name
-  resource_group_name        = azurerm_resource_group.opal_resource_group.name
-  depends_on                 = [module.servicebus-namespace]
-  managed_identity_object_id = var.managed_identity_object_id
-  requires_session = true
+  source                               = "git@github.com:hmcts/terraform-module-servicebus-subscription?ref=master"
+  name                                 = "opal-fines-reference-data-subscription"
+  namespace_name                       = module.servicebus-namespace.name
+  topic_name                           = module.opal-reference-data-topic.name
+  resource_group_name                  = azurerm_resource_group.opal_resource_group.name
+  depends_on                           = [module.servicebus-namespace]
+  managed_identity_object_id           = var.managed_identity_object_id
+  requires_session                     = true
   dead_lettering_on_message_expiration = false
 }
 resource "azurerm_key_vault_secret" "opal-fines-reference-data-subscription-name" {
