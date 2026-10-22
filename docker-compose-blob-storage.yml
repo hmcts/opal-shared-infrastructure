@@ -3,6 +3,8 @@ services:
     image: mcr.microsoft.com/azure-storage/azurite:3.37.0-arm64
     platform: linux/arm64
     restart: always
+    env_file:
+      - ./docker-files/.env.shared
     command: >
       azurite --loose
       --blobHost 0.0.0.0 --blobPort 10000
