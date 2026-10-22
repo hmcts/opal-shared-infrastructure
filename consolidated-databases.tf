@@ -38,7 +38,7 @@ module "opal_consolidated_postgresql" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_USER" {
-  count = local.consolidated_postgresql_enabled ? 1 : 0
+  count = local.consolidated_postgresql_secrets_enabled ? 1 : 0
 
   name         = "${var.product}-CONSOLIDATED-POSTGRES-USER"
   value        = module.opal_consolidated_postgresql[0].username
@@ -46,7 +46,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_USER" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_USER" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${each.value["component"]}-POSTGRES-USER"
   value        = module.opal_consolidated_postgresql[0].username
@@ -54,7 +54,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_USER" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PASS" {
-  count = local.consolidated_postgresql_enabled ? 1 : 0
+  count = local.consolidated_postgresql_secrets_enabled ? 1 : 0
 
   name         = "${var.product}-CONSOLIDATED-POSTGRES-PASS"
   value        = module.opal_consolidated_postgresql[0].password
@@ -62,7 +62,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PASS" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_PASS" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${each.value["component"]}-POSTGRES-PASS"
   value        = module.opal_consolidated_postgresql[0].password
@@ -70,7 +70,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_PASS" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_HOST" {
-  count = local.consolidated_postgresql_enabled ? 1 : 0
+  count = local.consolidated_postgresql_secrets_enabled ? 1 : 0
 
   name         = "${var.product}-CONSOLIDATED-POSTGRES-HOST"
   value        = module.opal_consolidated_postgresql[0].fqdn
@@ -78,7 +78,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_HOST" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_HOST" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${each.value["component"]}-POSTGRES-HOST"
   value        = module.opal_consolidated_postgresql[0].fqdn
@@ -86,7 +86,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_HOST" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PORT" {
-  count = local.consolidated_postgresql_enabled ? 1 : 0
+  count = local.consolidated_postgresql_secrets_enabled ? 1 : 0
 
   name         = "${var.product}-CONSOLIDATED-POSTGRES-PORT"
   value        = local.db_port
@@ -94,7 +94,7 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_PORT" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_PORT" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${each.value["component"]}-POSTGRES-PORT"
   value        = local.db_port
@@ -102,14 +102,14 @@ resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_PORT" {
 }
 
 resource "azurerm_key_vault_secret" "CONSOLIDATED_POSTGRES_DATABASES" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${var.product}-CONSOLIDATED-POSTGRES-${replace(each.key, "_", "-")}-DATABASE"
   value        = each.value["db_name"]
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 resource "azurerm_key_vault_secret" "CONSOLIDATED_DATABASE_KEY_VAULT_DATABASE" {
-  for_each = local.consolidated_postgresql_enabled ? local.consolidated_postgresql_databases : {}
+  for_each = local.consolidated_postgresql_secrets_enabled ? local.consolidated_postgresql_secrets_enabled : {}
 
   name         = "${each.value["component"]}-POSTGRES-DATABASE"
   value        = each.value["db_name"]
