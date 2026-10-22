@@ -94,16 +94,6 @@ locals {
       pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
     }
 
-    "log-audit-service" = {
-      component                  = "log-audit-service"
-      db_name                    = "opal-log-audit-db"
-      enabled_envs               = ["stg"]
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-log-audit-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
-    }
-
     "maintenance-service" = {
       component       = "maintenance-service"
       db_name         = "opal-maintenance-db"
@@ -134,7 +124,8 @@ locals {
     }
   }
 
-  consolidated_postgresql_enabled = contains(["demo", "ithc"], var.env)
+  consolidated_postgresql_enabled         = contains(["demo", "ithc", "stg"], var.env)
+  consolidated_postgresql_secrets_enabled = contains(["demo", "ithc"], var.env)
 
   consolidated_postgresql_databases = {
     for _, v in local.legacy_postgresql_all_servers :
@@ -147,7 +138,7 @@ locals {
   postgresql_all_enabed_servers_none_consolidated = {
     for name, config in local.legacy_postgresql_all_servers :
     name => config
-    if !local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
+    if !local.consolidated_postgresql_secrets_enabled && contains(config.enabled_envs, var.env)
   }
 
   consolidated_postgresql_server_configuration = [
