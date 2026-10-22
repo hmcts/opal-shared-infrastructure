@@ -113,6 +113,8 @@ if [[ "$RUN_GRADLE" == "true" ]]; then
   (cd "$BASE_DIR/opal-file-handler-service" && ./gradlew clean assemble)
 fi
 
+source "$BASE_DIR/opal-shared-infrastructure/ssh/setup-bais-sftp-docker.sh"
+
 docker compose -p "$PROJECT" \
   "${COMPOSE_FILES[@]}" \
-  up --build -d opal-file-handler-service
+  up --build --force-recreate -d sftp opal-file-handler-service
