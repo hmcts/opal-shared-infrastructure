@@ -17,5 +17,29 @@ services:
     networks:
       - storage-emulator
 
+  azurite-init:
+    image: mcr.microsoft.com/azure-cli:2.74.0
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        attempts=0;
+        until az storage container create --name reports
+        --connection-string "$$AZURE_STORAGE_CONNECTION_STRING"
+        --only-show-errors >/dev/null 2>&1; do
+          attempts=$$((attempts + 1));
+          if [ "$$attempts" -ge 30 ]; then
+            echo "Could not create the reports container in Azurite" >&2;
+            exit 1;
+          fi;
+          sleep 2;
+        done;
+        echo "Reports container is available in Azurite"
+    env_file:
+      - ./docker-files/.env.shared
+    depends_on:
+      - azurite
+    networks:
+      - storage-emulator
+
 networks:
   storage-emulator:
