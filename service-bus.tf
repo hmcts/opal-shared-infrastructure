@@ -159,6 +159,7 @@ module "servicebus-queue-create-draft-account" {
   namespace_name      = module.servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
   depends_on          = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-queue-create-draft-account-queue-name" {
