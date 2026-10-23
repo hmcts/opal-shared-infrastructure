@@ -171,6 +171,22 @@ resource "azurerm_key_vault_secret" "servicebus-queue-create-draft-account-queue
   value        = module.servicebus-queue-create-draft-account.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-vpfpo-acknowledgements" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                       = "VPFPO-acknowledgements-queue"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-vpfpo-acknowledgements-queue-name" {
+  name         = "servicebus-vpfpo-acknowledgements-queue-name"
+  value        = module.servicebus-queue-vpfpo-acknowledgements.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
 module "opal-reference-data-topic" {
   source                     = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
   name                       = "opal-reference-data-topic"
