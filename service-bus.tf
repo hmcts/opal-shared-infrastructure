@@ -221,7 +221,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queu
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 module "opal-fines-reference-data-subscription" {
-  source                               = "git@github.com:hmcts/terraform-module-servicebus-subscription?ref=master"
+  source                               = "git@github.com:hmcts/terraform-module-servicebus-subscription?ref=4.x"
   name                                 = "opal-fines-reference-data-subscription"
   namespace_name                       = module.servicebus-namespace.name
   topic_name                           = module.opal-reference-data-topic.name
