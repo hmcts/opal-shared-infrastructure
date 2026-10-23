@@ -54,9 +54,6 @@ variable "managed_identity_object_id" {
 variable "csds_managed_identity_object_id" {
   default = ""
 }
-variable "enable_managed_identity" {
-  default = false
-}
 
 variable "developers_group" {
   default = "DTS SDS Developers"

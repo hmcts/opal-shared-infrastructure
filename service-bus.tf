@@ -10,10 +10,6 @@ module "servicebus-namespace" {
   common_tags                  = var.common_tags
   sku                          = var.service_bus_sku
   project                      = var.businessArea
-  enable_managed_identity      = var.enable_managed_identity
-  managed_identity_resource_id = var.managed_identity_resource_id
-  managed_identity_object_id   = var.managed_identity_object_id
-  role_assignments             = ["Azure Service Bus Data Owner"]
 }
 
 output "sb_primary_send_and_listen_connection_string" {
