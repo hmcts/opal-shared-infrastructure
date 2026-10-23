@@ -228,6 +228,6 @@ module "opal-fines-reference-data-subscription" {
 }
 resource "azurerm_key_vault_secret" "opal-fines-reference-data-subscription-name" {
   name         = "opal-fines-reference-data-subscription-name"
-  value        = module.opal-fines-reference-data-subscription.name
+  value        = "opal-fines-reference-data-subscription"
   key_vault_id = module.opal_key_vault.key_vault_id
 }
