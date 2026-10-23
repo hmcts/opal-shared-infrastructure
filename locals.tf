@@ -124,7 +124,7 @@ locals {
     }
   }
 
-  consolidated_postgresql_enabled         = contains(["demo", "ithc", "stg"], var.env)
+  consolidated_postgresql_enabled         = contains(["demo", "ithc"], var.env)
   consolidated_postgresql_secrets_enabled = contains(["demo", "ithc"], var.env)
 
   consolidated_postgresql_databases = {
