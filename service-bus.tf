@@ -191,7 +191,7 @@ module "opal-fines-reference-data-subscription" {
   name                                 = "opal-fines-reference-data-subscription"
   namespace_id                         = module.servicebus-namespace.id
   topic_name                           = module.opal-reference-data-topic.name
-  depends_on                           = [module.servicebus-namespace]
+  depends_on                           = [module.opal-reference-data-topic]
   managed_identity_object_id           = var.managed_identity_object_id
   requires_session                     = true
   dead_lettering_on_message_expiration = false
