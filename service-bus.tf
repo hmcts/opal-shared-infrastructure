@@ -39,7 +39,7 @@ resource "azurerm_key_vault_secret" "servicebus_primary_shared_access_key" {
 }
 
 module "servicebus-queue-logging-pdpl" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "logging-pdpl"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -54,7 +54,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-logging-pdpl-queue-name" {
 }
 
 module "servicebus-queue-report" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "report"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -69,7 +69,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-report-queue-name" {
 }
 
 module "servicebus-queue-auto-payments-process-interface-files" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "auto-payments-process-interface-files"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -85,7 +85,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-auto-payments-process-inte
 
 
 module "servicebus-queue-allocate-tills" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "allocate-tills"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -102,7 +102,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-allocate-tills-queue-name"
 }
 
 module "servicebus-queue-hmrc-checks" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "hmrc-checks"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -117,7 +117,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-hmrc-checks-queue-name" {
 }
 
 module "servicebus-queue-banking-interfaces-preprocess-interface-file-fines" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "banking-interfaces-preprocess-interface-file-fines"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -132,7 +132,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preproc
 }
 
 module "servicebus-queue-banking-interfaces-preprocess-interface-file-maintenance" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "banking-interfaces-preprocess-interface-file-maintenance"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
@@ -147,7 +147,7 @@ resource "azurerm_key_vault_secret" "servicebus-queue-banking-interfaces-preproc
 }
 
 module "servicebus-queue-rm-publish-draft-casefile" {
-  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue"
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
   name                       = "rm-publish-draft-casefile-queue"
   namespace_name             = module.servicebus-namespace.name
   resource_group_name        = azurerm_resource_group.opal_resource_group.name
