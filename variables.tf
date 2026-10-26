@@ -124,6 +124,13 @@ variable "bais_emulator_sftp_mappings" {
     {
       container_name = "cder"
       user_name      = "cder"
+    },{
+      container_name = "vpfpo"
+      user_name      = "vpfpo"
+    },
+    {
+      container_name = "vpfpo-external"
+      user_name      = "vpfpoexternal"
     }
   ]
 }
