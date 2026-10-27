@@ -207,7 +207,6 @@ module "opal-reference-data-topic" {
   namespace_name      = module.servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
   depends_on          = [module.servicebus-namespace]
-  //This id is not currently set in the demo and test environments
   managed_identity_object_id = var.csds_managed_identity_object_id
 }
 
