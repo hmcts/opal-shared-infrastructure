@@ -216,6 +216,22 @@ resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queu
   value        = module.servicebus-queue-publish-draft-account.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+module "opal-reference-data-topic" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
+  name                       = "opal-reference-data-topic"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  //This needs to be changed to csds_managed_identity_object_id once CSDS integration environmetns are confirmed
+  managed_identity_object_id = var.managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-opal-reference-data-topic-name" {
+  name         = "servicebus-opal-reference-data-topic-name"
+  value        = module.opal-reference-data-topic.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
 module "opal-fines-reference-data-subscription" {
   source                               = "git@github.com:hmcts/terraform-module-servicebus-subscription?ref=4.x"
   name                                 = "opal-fines-reference-data-subscription"
