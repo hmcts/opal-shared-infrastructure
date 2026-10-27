@@ -207,8 +207,7 @@ module "opal-reference-data-topic" {
   namespace_name      = module.servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
   depends_on          = [module.servicebus-namespace]
-  //This needs to be changed to csds_managed_identity_object_id once CSDS integration environmetns are confirmed
-  managed_identity_object_id = var.managed_identity_object_id
+  managed_identity_object_id = var.csds_managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-opal-reference-data-topic-name" {
