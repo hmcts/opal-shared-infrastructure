@@ -48,7 +48,7 @@ variable "managed_identity_resource_id" {
   default = []
 }
 variable "managed_identity_object_id" {
-  default = ""
+  default = null
 }
 variable "enable_managed_identity" {
   default = false

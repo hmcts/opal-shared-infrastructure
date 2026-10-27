@@ -152,3 +152,48 @@ resource "azurerm_key_vault_secret" "servicebus-queue-rm-publish-draft-casefile-
   value        = module.servicebus-queue-rm-publish-draft-casefile.name
   key_vault_id = module.opal_key_vault.key_vault_id
 }
+
+module "servicebus-queue-create-draft-account" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                       = "create-draft-account-queue"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-create-draft-account-queue-name" {
+  name         = "servicebus-create-draft-account-queue-name"
+  value        = module.servicebus-queue-create-draft-account.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+module "servicebus-queue-vpfpo-acknowledgements" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                       = "VPFPO-acknowledgements-queue"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-vpfpo-acknowledgements-queue-name" {
+  name         = "servicebus-vpfpo-acknowledgements-queue-name"
+  value        = module.servicebus-queue-vpfpo-acknowledgements.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
+
+module "servicebus-queue-publish-draft-account" {
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-queue?ref=4.x"
+  name                       = "publish-draft-account-queue"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
+  managed_identity_object_id = var.managed_identity_object_id
+}
+
+resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queue-name" {
+  name         = "servicebus-publish-draft-account-queue-name"
+  value        = module.servicebus-queue-publish-draft-account.name
+  key_vault_id = module.opal_key_vault.key_vault_id
+}
