@@ -202,11 +202,11 @@ resource "azurerm_key_vault_secret" "servicebus-queue-publish-draft-account-queu
   key_vault_id = module.opal_key_vault.key_vault_id
 }
 module "opal-reference-data-topic" {
-  source              = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
-  name                = "opal-reference-data-topic"
-  namespace_name      = module.servicebus-namespace.name
-  resource_group_name = azurerm_resource_group.opal_resource_group.name
-  depends_on          = [module.servicebus-namespace]
+  source                     = "git@github.com:hmcts/terraform-module-servicebus-topic?ref=4.x"
+  name                       = "opal-reference-data-topic"
+  namespace_name             = module.servicebus-namespace.name
+  resource_group_name        = azurerm_resource_group.opal_resource_group.name
+  depends_on                 = [module.servicebus-namespace]
   managed_identity_object_id = var.csds_managed_identity_object_id
 }
 
