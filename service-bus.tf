@@ -226,6 +226,7 @@ module "opal-fines-reference-data-subscription" {
   managed_identity_object_id           = var.managed_identity_object_id
   requires_session                     = true
   dead_lettering_on_message_expiration = false
+  max_delivery_count                   = 2147483647
 }
 resource "azurerm_key_vault_secret" "opal-fines-reference-data-subscription-name" {
   name         = "opal-fines-reference-data-subscription-name"
