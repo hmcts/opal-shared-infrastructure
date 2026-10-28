@@ -29,6 +29,7 @@ module "opal_storage" {
 
   team_contact = "#opal"
   common_tags  = var.common_tags
+  defender_enabled = true
 }
 
 
