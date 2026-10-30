@@ -32,7 +32,6 @@ module "opal_file_handler_service_bais_emulator" {
   account_kind = "StorageV2"
   enable_hns   = true
   enable_sftp  = true
-
   containers = [
     for container_name in local.bais_emulator_containers : {
       name        = container_name
