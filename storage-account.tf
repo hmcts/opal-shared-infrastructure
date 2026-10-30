@@ -114,6 +114,10 @@ module "opal_file_handler_service_file_store" {
     {
       name        = "cder"
       access_type = "private"
+    },
+    {
+      name        = "vpfpo"
+      access_type = "private"
     }
   ]
 
