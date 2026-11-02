@@ -1,3 +1,5 @@
-service_bus_sku     = "Premium"
-soc_subscription_id = "5ca62022-6aa2-4cee-aaa7-e7536c8d566c"
-cnp_subscription_id = "5ca62022-6aa2-4cee-aaa7-e7536c8d566c"
+service_bus_sku                 = "Premium"
+soc_subscription_id             = "5ca62022-6aa2-4cee-aaa7-e7536c8d566c"
+cnp_subscription_id             = "5ca62022-6aa2-4cee-aaa7-e7536c8d566c"
+managed_identity_object_id      = "445ecec7-3da2-457b-ab81-adb12303fe49"
+csds_managed_identity_object_id = "59df76c2-c8f3-429f-befe-c6c23fe95751"

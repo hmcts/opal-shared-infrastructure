@@ -29,6 +29,8 @@ module "legacy_postgresql" {
   pgsql_databases            = each.value.pgsql_databases
   pgsql_server_configuration = each.value.pgsql_server_configuration
   pgsql_version              = local.db_version
+  pgsql_sku                  = each.value.sku
+  pgsql_storage_tier         = each.value.storage_tier
   auto_grow_enabled          = true
 }
 

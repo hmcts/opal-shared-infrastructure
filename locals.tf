@@ -2,10 +2,12 @@ locals {
   private_endpoint_rg_name   = "ss-${var.env}-network-rg"
   private_endpoint_vnet_name = "ss-${var.env}-vnet"
 
-  db_port      = 5432
-  db_version   = 17
-  db_collation = "en_GB.utf8"
-  default_envs = ["demo", "ithc", "perftest", "test", "stg", "prod"]
+  db_port              = 5432
+  db_version           = 17
+  db_collation         = "en_GB.utf8"
+  default_envs         = ["demo", "ithc", "perftest", "test", "stg", "prod"]
+  default_sku          = "GP_Standard_D2s_v3"
+  default_storage_tier = null
 
   legacy_postgresql_default_server_configuration = [
     {
@@ -40,6 +42,12 @@ locals {
       enabled_envs  = local.default_envs
       collation     = local.db_collation
       pgsql_version = local.db_version
+      env_overrides = {
+        for env in ["test", "prod"] : env => {
+          sku          = "GP_Standard_D4ds_v4"
+          storage_tier = "P10"
+        }
+      }
       pgsql_databases = concat(
         [
           {
@@ -92,16 +100,12 @@ locals {
       pgsql_version              = local.db_version
       pgsql_databases            = [{ name = "opal-logging-db" }]
       pgsql_server_configuration = local.legacy_postgresql_fdw_server_configuration
-    }
-
-    "log-audit-service" = {
-      component                  = "log-audit-service"
-      db_name                    = "opal-log-audit-db"
-      enabled_envs               = ["stg"]
-      collation                  = local.db_collation
-      pgsql_version              = local.db_version
-      pgsql_databases            = [{ name = "opal-log-audit-db" }]
-      pgsql_server_configuration = local.legacy_postgresql_default_server_configuration
+      env_overrides = {
+        for env in ["test", "prod"] : env => {
+          sku          = "GP_Standard_D4ds_v4"
+          storage_tier = "P10"
+        }
+      }
     }
 
     "maintenance-service" = {
@@ -134,7 +138,8 @@ locals {
     }
   }
 
-  consolidated_postgresql_enabled = contains(["demo", "ithc"], var.env)
+  consolidated_postgresql_enabled         = contains(["demo", "ithc"], var.env)
+  consolidated_postgresql_secrets_enabled = contains(["demo", "ithc"], var.env)
 
   consolidated_postgresql_databases = {
     for _, v in local.legacy_postgresql_all_servers :
@@ -146,8 +151,11 @@ locals {
 
   postgresql_all_enabed_servers_none_consolidated = {
     for name, config in local.legacy_postgresql_all_servers :
-    name => config
-    if !local.consolidated_postgresql_enabled && contains(config.enabled_envs, var.env)
+    name => merge({
+      sku          = local.default_sku
+      storage_tier = local.default_storage_tier
+    }, config, try(config.env_overrides[var.env], {}))
+    if !local.consolidated_postgresql_secrets_enabled && contains(config.enabled_envs, var.env)
   }
 
   consolidated_postgresql_server_configuration = [

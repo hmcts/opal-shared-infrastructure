@@ -155,6 +155,8 @@ if [[ "$SKIP_CLEAN" == "false" ]]; then
   ' _
 fi
 
+source "$BASE_DIR/opal-shared-infrastructure/ssh/setup-bais-sftp-docker.sh"
+
 PROJECT=opal-stack
 
 COMPOSE_FILES=(
