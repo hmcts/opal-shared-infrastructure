@@ -160,7 +160,7 @@
                   "DeadLetteringOnMessageExpiration": false,
                   "DefaultMessageTimeToLive": "PT1H",
                   "LockDuration": "PT5M",
-                  "MaxDeliveryCount": 9999,
+                  "MaxDeliveryCount": 10,
                   "ForwardDeadLetteredMessagesTo": "",
                   "ForwardTo": "",
                   "RequiresSession": true
