@@ -2,6 +2,8 @@ provider "azurerm" {
   features {}
 }
 
+provider "azuread" {}
+
 provider "tls" {}
 
 provider "random" {}
