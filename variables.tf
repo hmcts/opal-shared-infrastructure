@@ -59,6 +59,12 @@ variable "developers_group" {
   default = "DTS SDS Developers"
 }
 
+variable "perf_test_vm_resizers_group_object_id" {
+  description = "Object ID of the Entra group (DTS Opal Perf VM Resizers (env:test)) allowed to resize the perf test VMs. No role is assigned while null."
+  type        = string
+  default     = null
+}
+
 variable "service_bus_sku" {
   default = "Standard"
 }
