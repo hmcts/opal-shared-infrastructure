@@ -30,6 +30,10 @@ module "opal_storage" {
   team_contact     = "#opal"
   common_tags      = var.common_tags
   defender_enabled = true
+
+  defender_malware_scanning_enabled          = false
+  defender_malware_scanning_cap_gb_per_month = -1
+  defender_sensitive_data_discovery_enabled  = false
 }
 
 
