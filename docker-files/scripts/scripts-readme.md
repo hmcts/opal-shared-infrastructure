@@ -32,13 +32,20 @@ Examples:
 
 ## opalDown
 
-Stops the docker stack and optionally removes volumes.
+Stops and removes the backend Docker stack by default. Add `-frontend` or `-fe`
+to also stop and remove the frontend. Add `--reset` or `-r` to also delete volumes.
+The frontend and reset options can be combined in either order.
+
+Without the frontend option, frontend containers are left running and may keep
+the shared Docker network in use.
 
 Examples:
 
 ```
 ./scripts/opalDown.sh
 ./scripts/opalDown.sh -r
+./scripts/opalDown.sh -fe
+./scripts/opalDown.sh -r -fe
 ```
 
 ## opalFinesRebuild
