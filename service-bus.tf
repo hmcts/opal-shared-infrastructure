@@ -207,8 +207,10 @@ module "opal-reference-data-topic" {
   namespace_name      = module.servicebus-namespace.name
   resource_group_name = azurerm_resource_group.opal_resource_group.name
   depends_on          = [module.servicebus-namespace]
-  //This id is not currently set in the demo and test environments
-  managed_identity_object_id = var.csds_managed_identity_object_id
+  # Preserve the existing Opal Sender grant in production; switching it to CSDS
+  # would replace the grant and trigger downstream subscription replacement.
+  # The CSDS identity is not currently set in demo and test.
+  managed_identity_object_id = var.env == "prod" ? var.managed_identity_object_id : var.csds_managed_identity_object_id
 }
 
 resource "azurerm_key_vault_secret" "servicebus-opal-reference-data-topic-name" {
