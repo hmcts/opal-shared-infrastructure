@@ -51,6 +51,12 @@ variable "managed_identity_object_id" {
   default = null
 }
 
+variable "servicebus_receiver_group_object_id" {
+  description = "Object ID of DTS Opal Developers Production in prod, or DTS Opal Developers NonProd in every non-production environment."
+  type        = string
+  nullable    = false
+}
+
 variable "csds_managed_identity_object_id" {
   default = ""
 }
