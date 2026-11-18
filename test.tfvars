@@ -4,3 +4,5 @@ managed_identity_object_id      = "a6009d4a-fde2-4d74-9831-79b640b6d3af"
 csds_managed_identity_object_id = null
 
 perf_test_vm_resizers_group_object_id = "789da3c8-5af4-4da8-89e9-1ede2bdde76b" # DTS Opal Perf VM Resizers (env:test)
+
+servicebus_receiver_group_object_id = "9984475d-4613-4ad1-a681-0a0816e35245" # DTS Opal Developers NonProd
