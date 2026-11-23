@@ -260,6 +260,54 @@ class RenderingTests(unittest.TestCase):
         self.assertNotIn("Restarts:", markdown)
         self.assertIn("fines-service:prod-example", markdown)
 
+    def test_teams_uses_a_separate_card_for_each_environment(self):
+        result = self.sample()
+        template = result["environments"][0]
+        result["environments"] = [{**copy.deepcopy(template), "name": name}
+                                  for name in ("Staging", "Demo", "ITHC", "Test")]
+        cards = report.render_cards(result)
+        self.assertEqual(len(cards), 4)
+        for card, name in zip(cards, ("Staging", "Demo", "ITHC", "Test")):
+            self.assertEqual(card["body"][1]["columns"][0]["items"][0]["text"], name)
+            self.assertEqual(card["actions"][0]["type"], "Action.ShowCard")
+            self.assertLessEqual(report.payload_size(card), report.MAX_PAYLOAD_BYTES)
+
+    def test_build_references_are_short_but_full_images_remain_expandable(self):
+        image = "hmctsprod.azurecr.io/opal/fines-service:prod-b4ae8c7-20261123132059"
+        result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
+        card = report.render_cards(result)[0]
+        visible = json.dumps(card["body"], ensure_ascii=False)
+        self.assertIn("prod · b4ae8c7", visible)
+        self.assertNotIn("20261123132059", visible)
+        self.assertIn(image, json.dumps(card["actions"]))
+        self.assertIn("prod-b4ae8c7-20261123132059", report.render_markdown(result))
+        self.assertIn("Good", visible)
+
+    def test_attention_and_failure_reasons_stay_visible_without_expanding(self):
+        items = resources(ready=False)
+        items[-1]["status"]["containerStatuses"][0]["state"] = {"waiting": {"reason": "CrashLoopBackOff"}}
+        card = report.render_cards(report.generate_report(config(), NOW, lambda *_: items))[0]
+        visible = json.dumps(card["body"])
+        self.assertIn("Attention", visible)
+        self.assertIn("CrashLoopBackOff", visible)
+        self.assertIn("0/1", visible)
+
+    def test_image_summary_keeps_multiple_app_versions_and_counts_supporting_images(self):
+        row = {"name": "frontend", "image": "frontend:prod-8129632-20261120194505; "
+               "frontend:staging-fafbcdf-20261123175338; postgresql:17.5.0; redis:8.2.1"}
+        summary = report.version_summary(row)
+        self.assertIn("prod · 8129632", summary)
+        self.assertIn("staging · fafbcdf", summary)
+        self.assertIn("+2 images", summary)
+        self.assertNotIn("202611", summary)
+
+    def test_failed_cluster_card_keeps_warning_and_has_no_empty_details_button(self):
+        result = report.generate_report(config(), NOW, Mock(side_effect=report.ReportError("No access")))
+        card = report.render_cards(result)[0]
+        self.assertIn("Check failed", json.dumps(card["body"]))
+        self.assertIn("ss-stg-00-aks", json.dumps(card["body"]))
+        self.assertEqual(card["actions"], [])
+
     def test_two_clusters_share_a_row_without_hiding_different_images(self):
         conf = config(["ss-stg-00-aks", "ss-stg-01-aks"])
         result = report.generate_report(conf, NOW,

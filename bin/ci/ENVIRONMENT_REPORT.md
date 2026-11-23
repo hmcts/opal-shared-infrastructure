@@ -6,6 +6,12 @@ Scheduled runs send to Teams when the webhook repository secret is configured.
 Local runs preview by default; `--send` explicitly posts to Teams.
 PR and manual GitHub runs generate reports without sending messages.
 
+Teams shows a separate card for each environment, with coloured status, ready
+replicas, compact ages and short build references. Problems stay visible; use
+**Images & details** to expand full image references. Large environments split
+across additional cards within the Teams size limit. Markdown and JSON reports
+retain the complete image details.
+
 ## Run locally
 
 Use your existing Kubernetes contexts, with kubectl and Python 3.9+ installed,

@@ -19,9 +19,6 @@ from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 from zoneinfo import ZoneInfo
 
-from teams_card import make_card
-
-
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 WORKLOAD_KINDS = {"Deployment", "StatefulSet", "DaemonSet"}
@@ -388,6 +385,8 @@ def summarise_environment(environment):
         rows.append({"name": service_name(name), "health": health, "replicas": replicas,
                      "age": combined_age(parts),
                      "image": image_summary([image for row in parts for image in row["running_images"]]),
+                     "full_images": sorted({image.split("=", 1)[-1] for row in parts
+                                            for image in row["running_images"]}),
                      "notes": service_notes(entries)})
     rows.sort(key=lambda row: (row["health"] not in ("Missing", "Attention"), row["name"]))
     health = environment_health(environment).split(" — ", 1)[0]
@@ -420,17 +419,61 @@ def render_markdown(report):
     return "\n".join(lines).rstrip() + "\n"
 
 
+def clipped(value, limit):
+    return value if len(value) <= limit else value[:limit - 1] + "…"
+
+
+def status_colour(health):
+    if health == "Healthy":
+        return "Good"
+    if health in ("Attention", "Missing", "Check failed"):
+        return "Attention"
+    return "Warning"
+
+
+def card_text(value, **style):
+    return {"type": "TextBlock", "text": value, "wrap": True, **style}
+
+
+def version_summary(row):
+    """Show app build references; retain every full image in the expandable details."""
+    images = row["image"].split("; ") if row["image"] != "—" else []
+    primary = [image for image in images
+               if service_name(re.split(r"[:@]", image, maxsplit=1)[0]) == row["name"]]
+    selected = primary or images
+    labels = []
+    for image in selected[:2]:
+        if "@" in image:
+            label = image.split("@", 1)[1][:19]
+        else:
+            label = image.partition(":")[2] or image
+            build = re.fullmatch(r"(.+)-([a-fA-F0-9]{7,40})-\d{14}", label)
+            if build:
+                label = f"{build[1]} · {build[2][:7]}"
+        labels.append(clipped(label, 70))
+    extra = len(images) - min(2, len(selected))
+    if extra:
+        labels.append(f"+{extra} image{'s' if extra != 1 else ''}")
+    return " / ".join(dict.fromkeys(labels)) or "Image unavailable"
+
+
 def service_card_row(row):
-    columns = [{"type": "Column", "width": width, "items": [
-        {"type": "TextBlock", "text": value, "wrap": True, **style}]}
-        for width, value, style in (
-            (3, row["name"], {"weight": "Bolder"}), (2, row["health"], {}),
-            (1, row["replicas"], {}), (2, row["age"], {}), (5, row["image"], {}))]
-    items = [{"type": "ColumnSet", "columns": columns}]
+    health, replicas = row["health"], row["replicas"]
+    status = f"✓ {replicas} ready" if health == "Healthy" else f"{health} · {replicas}"
+    pod_age = row["age"].replace(" ", "")
+    metadata = version_summary(row)
+    if pod_age != "—":
+        metadata = f"Age {pod_age}  ·  {metadata}"
+    items = [{"type": "ColumnSet", "columns": [
+        {"type": "Column", "width": "stretch", "items": [card_text(row["name"], weight="Bolder")]},
+        {"type": "Column", "width": "auto", "items": [
+            card_text(status, color=status_colour(health), size="Small", weight="Bolder",
+                      horizontalAlignment="Right")]},
+    ]}, card_text(metadata, size="Small", isSubtle=True, spacing="Small")]
     if row["notes"]:
-        items.append({"type": "TextBlock", "text": row["notes"], "wrap": True, "size": "Small",
-                      "color": "Attention" if row["health"] in ("Missing", "Attention") else "Default"})
-    return {"type": "Container", "separator": True, "items": items}
+        items.append(card_text(clipped(row["notes"], 350), size="Small", spacing="Small",
+                               color=status_colour(health)))
+    return {"type": "Container", "separator": True, "spacing": "Medium", "items": items}
 
 
 def envelope(card):
@@ -455,55 +498,65 @@ def write_card_files(output_dir, cards):
 
 
 def render_cards(report):
-    """Use the same compact service summary as Markdown; repeat headings on splits."""
-    def card(body):
-        title, message = "Opal environment report", local_time(report["captured_at"])
+    """One environment per card, with compact rows and expandable image details."""
+    def card(summary, rows, continued=False):
+        label = "SAMPLE · OPAL ENVIRONMENT REPORT" if report.get("sample_data") else "OPAL ENVIRONMENT REPORT"
+        title = summary["name"] + (" · continued" if continued else "")
+        healthy = sum(row["health"] == "Healthy" for row in summary["rows"])
+        total = len(summary["rows"])
+        counts = f"{total} services · {healthy} healthy"
+        body = [card_text(label, size="Small", isSubtle=True),
+                {"type": "ColumnSet", "spacing": "Small", "columns": [
+                    {"type": "Column", "width": "stretch", "items": [card_text(title, size="Large", weight="Bolder")]},
+                    {"type": "Column", "width": "auto", "verticalContentAlignment": "Center", "items": [
+                        card_text(summary["health"], color=status_colour(summary["health"]),
+                                  weight="Bolder", horizontalAlignment="Right")]},
+                ]},
+                card_text(local_time(report["captured_at"]) + "  ·  " + counts,
+                          size="Small", isSubtle=True, spacing="Small")]
         if report.get("sample_data"):
-            title = "SAMPLE — " + title
-            message += " · Synthetic data; no live cluster checks"
-        return make_card(title, message, "emphasis", [], details=body)
+            body.append(card_text("Synthetic data; no live cluster checks", size="Small", color="Warning"))
+        for warning in summary["warnings"]:
+            body.append(card_text(warning, color="Warning"))
+        body.extend(service_card_row(row) for row in rows)
+        details = []
+        for row in rows:
+            images = row["full_images"] or ["No running pod image available"]
+            detail = [card_text(row["name"], weight="Bolder"),
+                      card_text(f"{row['health']} · {row['replicas']} ready · Age {row['age']}",
+                                size="Small", isSubtle=True, spacing="Small")]
+            detail.extend(card_text(image, size="Small", spacing="Small") for image in images)
+            if row["notes"]:
+                detail.append(card_text(row["notes"], size="Small", color=status_colour(row["health"])))
+            if row.get("abridged"):
+                detail.append(card_text("Additional detail in the saved report.", size="Small", isSubtle=True))
+            details.append({"type": "Container", "separator": True, "spacing": "Medium", "items": detail})
+        actions = [{"type": "Action.ShowCard", "title": "Images & details", "card": {
+            "type": "AdaptiveCard", "version": "1.2", "body": details}}] if details else []
+        return {"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard",
+                "version": "1.2", "msteams": {"width": "Full"}, "body": body, "actions": actions,
+                "fallbackText": f"Opal · {summary['name']} · {summary['health']} · {counts}"}
 
-    def block(value, heading=False):
-        return {"type": "TextBlock", "text": value, "wrap": True,
-                **({"weight": "Bolder", "size": "Medium", "separator": True} if heading else {})}
-
-    cards, body = [], []
+    cards = []
     for environment in report["environments"]:
         summary = summarise_environment(environment)
-        headings = [block(summary["name"] + " — " + summary["health"], True)]
-        if summary["warnings"]:
-            headings.append(block(". ".join(summary["warnings"])))
-        if summary["rows"]:
-            headings.append(service_card_row({"name": "Service", "health": "Status", "replicas": "Ready",
-                                              "age": "Age", "image": "Image", "notes": ""}))
-        entries = [service_card_row(row) for row in summary["rows"]] or [block("Check failed")]
-        pending_headings = headings
-        for entry in entries:
-            candidate = body + pending_headings + [entry]
-            if payload_size(card(candidate)) > MAX_PAYLOAD_BYTES and body:
-                cards.append(card(body))
-                body = []
-                pending_headings = headings
-                candidate = headings + [entry]
-            if payload_size(card(candidate)) > MAX_PAYLOAD_BYTES:
-                # Full unabridged detail remains in report.json.
-                texts = []
-
-                def collect_text(item):
-                    if item.get("text"):
-                        texts.append(item["text"])
-                    for child in item.get("items", []) + item.get("columns", []):
-                        collect_text(child)
-
-                collect_text(entry)
-                entry = block(" · ".join(texts)[:2500] + " · Additional detail in the saved report.")
-                candidate = body + pending_headings + [entry]
-            if payload_size(card(candidate)) > MAX_PAYLOAD_BYTES:
+        rows, part = [], 0
+        for row in summary["rows"]:
+            if payload_size(card(summary, rows + [row], part > 0)) > MAX_PAYLOAD_BYTES and rows:
+                cards.append(card(summary, rows, part > 0))
+                rows, part = [], part + 1
+            if payload_size(card(summary, [row], part > 0)) > MAX_PAYLOAD_BYTES:
+                # Keep the report complete; only the Teams rendering is abridged.
+                row = {**row, "name": clipped(row["name"], 150), "image": clipped(row["image"], 1000),
+                       "full_images": [clipped(image, 400) for image in row["full_images"][:10]],
+                       "notes": clipped(row["notes"], 600), "abridged": True}
+            if payload_size(card(summary, rows + [row], part > 0)) > MAX_PAYLOAD_BYTES:
                 raise ReportError("Environment heading exceeds the Teams card size limit")
-            body = candidate
-            pending_headings = []
-    if body:
-        cards.append(card(body))
+            rows.append(row)
+        final = card(summary, rows, part > 0)
+        if payload_size(final) > MAX_PAYLOAD_BYTES:
+            raise ReportError("Environment heading exceeds the Teams card size limit")
+        cards.append(final)
     return cards
 
 
