@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 from urllib.error import HTTPError
 
 CI_DIR = Path(__file__).resolve().parents[1]
@@ -434,6 +434,16 @@ class ExecutionTests(unittest.TestCase):
         prompt.assert_not_called()
         send.assert_not_called()
 
+    def test_local_authenticated_send_uses_explicit_teams_tenant(self):
+        webhook = "https://example.environment.api.powerplatform.com/workflow"
+        with patch.dict(os.environ, {"OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK": webhook}), \
+                patch.object(report, "collect", return_value=resources()), \
+                patch.object(report, "send_cards") as send, patch("builtins.print"):
+            self.assertEqual(report.main(self.args + ["--send", "--teams-auth", "azure-cli",
+                                                     "--teams-tenant", "teams-tenant"]), 0)
+        self.assertEqual(send.call_args.args[1], webhook)
+        self.assertEqual(send.call_args.kwargs, {"auth": "azure-cli", "tenant": "teams-tenant"})
+
     def test_cancelled_or_unhidden_webhook_entry_stops_before_cluster_queries(self):
         for error in (EOFError(), KeyboardInterrupt(), report.getpass.GetPassWarning()):
             with self.subTest(error=type(error).__name__), patch.dict(os.environ, {}, clear=True), \
@@ -531,6 +541,71 @@ class ExecutionTests(unittest.TestCase):
             with self.assertRaises(report.ReportError):
                 report.send_cards([{}], "http://example.invalid/webhook")
         request.assert_not_called()
+
+
+class TeamsAuthenticationTests(unittest.TestCase):
+    webhook = "https://example.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/test/triggers/manual/paths/invoke"
+
+    def test_azure_cli_token_uses_the_power_automate_audience(self):
+        with patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN\n")) as run:
+            self.assertEqual(report.teams_access_token(), "PRIVATE_TOKEN")
+        args = run.call_args.args[0]
+        self.assertEqual(args[args.index("--resource") + 1], "https://service.flow.microsoft.com/")
+        self.assertTrue(run.call_args.kwargs["capture_output"])
+        self.assertEqual(args[-2:], ["--output", "tsv"])
+
+    def test_token_failure_hides_raw_credentials_and_errors(self):
+        for result in (Mock(returncode=1, stdout="PRIVATE_TOKEN", stderr="PRIVATE_SECRET"),
+                       Mock(returncode=0, stdout=""), Mock(returncode=0, stdout="not a token")):
+            with self.subTest(result=result), patch.object(report.subprocess, "run", return_value=result):
+                with self.assertRaises(report.ReportError) as error:
+                    report.teams_access_token()
+                self.assertNotIn("PRIVATE", str(error.exception))
+
+    def test_teams_tenant_is_selected_without_switching_cluster_subscription(self):
+        with patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN")) as run:
+            report.teams_access_token("teams-tenant")
+        self.assertEqual(run.call_count, 1)
+        args = run.call_args.args[0]
+        self.assertEqual(args[args.index("--tenant") + 1], "teams-tenant")
+        self.assertEqual(args[1:3], ["account", "get-access-token"])
+        self.assertNotIn("--subscription", args)
+
+    def test_authenticated_send_adds_token_only_to_header(self):
+        opener = MagicMock()
+        opener.open.return_value.__enter__.return_value.status = 202
+        with patch.object(report, "teams_access_token", return_value="PRIVATE_TOKEN"), \
+                patch.object(report, "build_opener", return_value=opener) as build, \
+                patch.object(report, "urlopen") as urlopen:
+            report.send_cards([{"hello": "world"}], self.webhook, auth="azure-cli")
+        request = opener.open.call_args.args[0]
+        self.assertEqual(request.get_header("Authorization"), "Bearer PRIVATE_TOKEN")
+        self.assertNotIn(b"PRIVATE_TOKEN", request.data)
+        self.assertNotIn("PRIVATE_TOKEN", request.full_url)
+        self.assertIsInstance(build.call_args.args[0], report.NoWebhookRedirects)
+        self.assertIsNone(build.call_args.args[0].redirect_request(None, None, 302, "", {}, "https://example.invalid"))
+        urlopen.assert_not_called()
+
+    def test_non_microsoft_urls_never_receive_or_request_a_token(self):
+        for url in ("https://example.invalid/webhook", "https://flow.api.powerplatform.com.evil.invalid/path",
+                    "https://flow.logic.azure.com:8443/path"):
+            with self.subTest(url=url), patch.object(report, "teams_access_token") as token, \
+                    patch.object(report, "build_opener") as opener:
+                with self.assertRaises(report.ReportError):
+                    report.send_cards([{}], url, auth="azure-cli")
+                token.assert_not_called()
+                opener.assert_not_called()
+
+    def test_401_explains_authentication_without_exposing_secrets(self):
+        opener = MagicMock()
+        opener.open.side_effect = HTTPError(self.webhook, 401, "PRIVATE_TOKEN", {}, None)
+        with patch.object(report, "teams_access_token", return_value="PRIVATE_TOKEN"), \
+                patch.object(report, "build_opener", return_value=opener):
+            with self.assertRaisesRegex(report.ReportError, "workflow's tenant") as error:
+                report.send_cards([{}], self.webhook, auth="azure-cli")
+        self.assertNotIn("PRIVATE_TOKEN", str(error.exception))
+        self.assertNotIn(self.webhook, str(error.exception))
+        self.assertEqual(opener.open.call_count, 1)
 
 
 if __name__ == "__main__":

@@ -33,6 +33,25 @@ If `OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK` is already set, the script uses it
 without prompting. Local runs use your existing cluster authentication and do
 not need the GitHub Azure secrets or federated credential.
 
+For a Teams workflow set to **Any user in my tenant** or **Specific users in my
+tenant**, use your Azure sign-in to authenticate the request:
+
+```sh
+python3 bin/ci/environment_report.py --send --teams-auth azure-cli
+```
+
+Your Azure account must belong to the workflow's tenant and, for specific-user
+workflows, be on its allowed list. The script obtains a short-lived Power
+Automate token from Azure CLI without printing or saving it. If sign-in has
+expired or uses a different tenant, run `az login` first.
+
+If the Teams workflow belongs to a different tenant from your clusters, select
+it explicitly with `--teams-tenant <TEAMS_TENANT_ID>` on that command. This selects
+the token's tenant without changing cluster configuration or the active Azure
+subscription. Your Azure CLI user session must already be able to obtain a token
+in the Teams tenant; a successful token lookup in the cluster tenant does not
+prove access to the Teams workflow.
+
 ## Test from a PR
 
 Commit and push the report files, then open a PR. The workflow automatically:
@@ -77,6 +96,11 @@ Azure authenticates the GitHub run using the configured trust.
 1. In Teams, use **Workflows** to create a workflow that receives a webhook and
    posts the supplied Adaptive Card to your chosen channel or chat. See
    [Microsoft's webhook setup guide](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).
+   The default GitHub sending command uses URL-only authentication, for the
+   **Anyone** trigger option where available. Tenant-restricted workflows require
+   `--teams-auth azure-cli` on the sending command and an Azure identity accepted
+   by the Teams workflow; the GitHub report identity's cluster permissions alone
+   do not configure this access.
 2. Save its webhook URL as the repository secret
    `OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK`.
 3. Once this workflow is merged to the default branch, the daily **09:00
