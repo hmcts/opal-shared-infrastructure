@@ -499,21 +499,29 @@ def render_cards(report):
     return cards
 
 
-def teams_access_token(tenant=None):
+def teams_access_token(tenant=None, login_dir=None):
     """Use the current Azure CLI identity; keep tokens and auth errors out of logs."""
     command = ["az", "account", "get-access-token", "--resource", "https://service.flow.microsoft.com/",
                "--query", "accessToken", "--output", "tsv"]
     if tenant:
         command.extend(["--tenant", tenant])
+    environment = os.environ.copy()
+    if login_dir:
+        environment["AZURE_CONFIG_DIR"] = str(Path(login_dir).expanduser().resolve())
     try:
         result = subprocess.run(
             command,
-            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=40, check=False)
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=40, check=False,
+            env=environment)
     except (OSError, subprocess.TimeoutExpired):
         raise ReportError("Could not obtain a Teams token; check Azure CLI and your az login session") from None
     token = result.stdout.strip()
     if result.returncode or not token or any(char.isspace() for char in token):
-        raise ReportError("Could not obtain a Teams token; sign in to the workflow's tenant with az login")
+        code = re.search(r"\bAADSTS\d+\b", result.stderr or "")
+        detail = f" ({code.group()})" if code else ""
+        raise ReportError(
+            f"Could not obtain a Teams token{detail}; check the Teams tenant, account sign-in and consent. "
+            "The tenant ID selects the token issuer; it does not authenticate the account.")
     return token
 
 
@@ -523,7 +531,7 @@ class NoWebhookRedirects(HTTPRedirectHandler):
         return None
 
 
-def send_cards(cards, webhook, auth="webhook", tenant=None):
+def send_cards(cards, webhook, auth="webhook", tenant=None, login_dir=None):
     """Only called after --send; never expose a secret URL in logs or arguments."""
     parsed = urlparse(webhook)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
@@ -533,7 +541,7 @@ def send_cards(cards, webhook, auth="webhook", tenant=None):
     if auth == "azure-cli":
         if not parsed.hostname.endswith((".logic.azure.com", ".api.powerplatform.com")) or parsed.port not in (None, 443):
             raise ReportError("Azure-authenticated delivery requires a Microsoft Power Automate trigger URL")
-        headers["Authorization"] = "Bearer " + teams_access_token(tenant)
+        headers["Authorization"] = "Bearer " + teams_access_token(tenant, login_dir)
         open_request = build_opener(NoWebhookRedirects()).open
     elif auth != "webhook":
         raise ReportError("Unsupported Teams authentication mode")
@@ -568,10 +576,12 @@ def main(argv=None):
     parser.add_argument("--teams-auth", choices=("webhook", "azure-cli"), default="webhook",
                         help="Use azure-cli for tenant-restricted Teams workflows (default: webhook URL only)")
     parser.add_argument("--teams-tenant", help="Teams workflow tenant ID for azure-cli authentication; cluster settings stay unchanged")
+    parser.add_argument("--teams-login-dir", type=Path,
+                        help="Separate Azure CLI login folder used only to obtain the Teams token")
     args = parser.parse_args(argv)
     try:
-        if args.teams_tenant and args.teams_auth != "azure-cli":
-            raise ReportError("--teams-tenant requires --teams-auth azure-cli")
+        if (args.teams_tenant or args.teams_login_dir) and args.teams_auth != "azure-cli":
+            raise ReportError("--teams-tenant and --teams-login-dir require --teams-auth azure-cli")
         args.output_dir = args.output_dir.expanduser().resolve()
         webhook = os.environ.get("OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK", "")
         if args.send and not webhook and sys.stdin.isatty():
@@ -596,7 +606,8 @@ def main(argv=None):
         print(f"Report saved to: {args.output_dir / 'report.md'}", flush=True)
         if args.send:
             if args.teams_auth == "azure-cli":
-                send_cards(cards, webhook, auth="azure-cli", tenant=args.teams_tenant)
+                send_cards(cards, webhook, auth="azure-cli", tenant=args.teams_tenant,
+                           login_dir=args.teams_login_dir)
             else:
                 send_cards(cards, webhook)
             print("Teams workflow accepted the report; workflow history confirms channel delivery.")

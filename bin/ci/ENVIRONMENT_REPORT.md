@@ -52,6 +52,38 @@ subscription. Your Azure CLI user session must already be able to obtain a token
 in the Teams tenant; a successful token lookup in the cluster tenant does not
 prove access to the Teams workflow.
 
+If token retrieval fails, the error includes Azure's `AADSTS` code when present,
+without displaying the raw response or token. To diagnose it without posting a
+message or changing your active subscription, run:
+
+```sh
+az account get-access-token --tenant <TEAMS_TENANT_ID> \
+  --resource https://service.flow.microsoft.com/ --query expiresOn --output tsv
+```
+
+This displays only the token expiry on success, or Azure's sign-in error. The
+tenant ID alone does not sign you in; additional login, consent or administrator
+approval may be needed depending on the error.
+
+To keep Teams sign-in separate from your cluster login, sign in once using a
+dedicated Azure CLI folder. Replace `TEAMS_TENANT_ID` with the workflow tenant:
+
+```sh
+AZURE_CONFIG_DIR="$HOME/.azure-teams" az login --tenant TEAMS_TENANT_ID \
+  --allow-no-subscriptions --scope https://service.flow.microsoft.com//.default
+```
+
+Then run the report using that folder only for Teams authentication:
+
+```sh
+python3 bin/ci/environment_report.py --send --teams-auth azure-cli \
+  --teams-tenant TEAMS_TENANT_ID --teams-login-dir "$HOME/.azure-teams"
+```
+
+The script leaves the cluster login and active subscription unchanged. Azure CLI
+stores the separate Teams session in this folder; it may require interactive
+renewal when the organisation's sign-in policy expires it (`AADSTS70043`).
+
 ## Test from a PR
 
 Commit and push the report files, then open a PR. The workflow automatically:

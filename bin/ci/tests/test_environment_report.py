@@ -442,7 +442,7 @@ class ExecutionTests(unittest.TestCase):
             self.assertEqual(report.main(self.args + ["--send", "--teams-auth", "azure-cli",
                                                      "--teams-tenant", "teams-tenant"]), 0)
         self.assertEqual(send.call_args.args[1], webhook)
-        self.assertEqual(send.call_args.kwargs, {"auth": "azure-cli", "tenant": "teams-tenant"})
+        self.assertEqual(send.call_args.kwargs, {"auth": "azure-cli", "tenant": "teams-tenant", "login_dir": None})
 
     def test_cancelled_or_unhidden_webhook_entry_stops_before_cluster_queries(self):
         for error in (EOFError(), KeyboardInterrupt(), report.getpass.GetPassWarning()):
@@ -556,11 +556,19 @@ class TeamsAuthenticationTests(unittest.TestCase):
 
     def test_token_failure_hides_raw_credentials_and_errors(self):
         for result in (Mock(returncode=1, stdout="PRIVATE_TOKEN", stderr="PRIVATE_SECRET"),
-                       Mock(returncode=0, stdout=""), Mock(returncode=0, stdout="not a token")):
+                       Mock(returncode=0, stdout="", stderr=""), Mock(returncode=0, stdout="not a token", stderr="")):
             with self.subTest(result=result), patch.object(report.subprocess, "run", return_value=result):
                 with self.assertRaises(report.ReportError) as error:
                     report.teams_access_token()
                 self.assertNotIn("PRIVATE", str(error.exception))
+
+    def test_token_failure_exposes_only_the_safe_azure_error_code(self):
+        result = Mock(returncode=1, stdout="PRIVATE_TOKEN", stderr="AADSTS65001: PRIVATE_SECRET https://example.invalid/secret")
+        with patch.object(report.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(report.ReportError, "AADSTS65001") as error:
+                report.teams_access_token("teams-tenant")
+        self.assertNotIn("PRIVATE", str(error.exception))
+        self.assertNotIn("https://", str(error.exception))
 
     def test_teams_tenant_is_selected_without_switching_cluster_subscription(self):
         with patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN")) as run:
@@ -570,6 +578,20 @@ class TeamsAuthenticationTests(unittest.TestCase):
         self.assertEqual(args[args.index("--tenant") + 1], "teams-tenant")
         self.assertEqual(args[1:3], ["account", "get-access-token"])
         self.assertNotIn("--subscription", args)
+
+    def test_separate_teams_login_folder_does_not_change_process_or_cluster_login(self):
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.dict(os.environ, {"AZURE_CONFIG_DIR": "/cluster-login"}), \
+                patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN")) as run:
+            report.teams_access_token("teams-tenant", Path(directory))
+            self.assertEqual(run.call_args.kwargs["env"]["AZURE_CONFIG_DIR"], str(Path(directory).resolve()))
+            self.assertEqual(os.environ["AZURE_CONFIG_DIR"], "/cluster-login")
+
+    def test_default_teams_token_uses_existing_azure_login_folder(self):
+        with patch.dict(os.environ, {"AZURE_CONFIG_DIR": "/existing-login"}), \
+                patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN")) as run:
+            report.teams_access_token()
+        self.assertEqual(run.call_args.kwargs["env"]["AZURE_CONFIG_DIR"], "/existing-login")
 
     def test_authenticated_send_adds_token_only_to_header(self):
         opener = MagicMock()
