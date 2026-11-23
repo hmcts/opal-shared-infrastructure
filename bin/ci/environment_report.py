@@ -443,23 +443,44 @@ def application_images(row):
     return primary or images, len(images) - len(primary or images)
 
 
+def image_build_time(image):
+    """Tags have no zone; assume UTC for approximate age, preserving the wall time."""
+    tag = image.split("@", 1)[0].partition(":")[2]
+    date_match = re.search(r"(?:^|-)(\d{14})$", tag)
+    try:
+        return datetime.strptime(date_match[1], "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc) if date_match else None
+    except ValueError:
+        return None
+
+
+def image_alert_level(row, captured_at):
+    """Unknown/future dates need checking; image age is separate from pod health."""
+    images, _ = application_images(row)
+    level = 0 if images else 1
+    for image in images:
+        built = image_build_time(image)
+        seconds = (timestamp(captured_at) - built).total_seconds() if built else None
+        if seconds is None or seconds < 0:
+            level = max(level, 1)
+        elif seconds >= 14 * 86400:
+            level = 2
+        elif seconds >= 12 * 86400:
+            level = max(level, 1)
+    return level
+
+
 def image_build_detail(image, captured_at):
     """Read build time from the tag; it is not registry creation/expiry metadata."""
     tag = image.split("@", 1)[0].partition(":")[2]
     build = re.fullmatch(r"(.+)-([a-fA-F0-9]{7,40})-(\d{14})", tag)
     reference = f"{build[1]} · {build[2][:7]}" if build else tag or image
-    date_match = re.search(r"(?:^|-)(\d{14})$", tag)
-    try:
-        built = datetime.strptime(date_match[1], "%Y%m%d%H%M%S") if date_match else None
-    except ValueError:
-        built = None
+    built = image_build_time(image)
     if built is None:
         return card_text("Build date unavailable · " + clipped(reference, 100),
-                         size="Small", spacing="Small")
-    # Tags do not encode a zone. Preserve their wall time and approximate age as UTC.
-    seconds = (timestamp(captured_at) - built.replace(tzinfo=timezone.utc)).total_seconds()
+                         size="Small", spacing="Small", color="Warning")
+    seconds = (timestamp(captured_at) - built).total_seconds()
     elapsed = "~" + age(seconds).replace(" ", "") + " old" if seconds >= 0 else "future tag date"
-    warning, colour = "", "Default"
+    warning, colour = "", "Warning" if seconds < 0 else "Default"
     if seconds >= 14 * 86400:
         warning, colour = " · 14+ days old", "Attention"
     elif seconds >= 12 * 86400:
@@ -511,21 +532,41 @@ def write_card_files(output_dir, cards):
     write_json(output_dir / "teams-cards.json", cards, compact=True)
     for index, card in enumerate(cards, 1):
         write_json(output_dir / f"teams-card-{index}.json", card, compact=True)
+    for path in output_dir.glob("teams-card-*.json"):
+        match = re.fullmatch(r"teams-card-(\d+)\.json", path.name)
+        if match and int(match[1]) > len(cards):
+            path.unlink()
 
 
 def render_cards(report):
-    """One environment per card, with compact rows and expandable image details."""
+    """Show exceptions by environment, or one all-clear card for the whole report."""
+    summaries = [summarise_environment(environment) for environment in report["environments"]]
+    for summary in summaries:
+        summary["attention_rows"] = [row for row in summary["rows"]
+            if row["health"] != "Healthy" or image_alert_level(row, report["captured_at"])]
+    affected = [summary for summary in summaries
+                if summary["attention_rows"] or summary["warnings"] or summary["health"] != "Healthy"]
+    clear = [summary["name"] for summary in summaries if summary not in affected]
+
     def card(summary, rows, continued=False):
         label = "SAMPLE · OPAL ENVIRONMENT REPORT" if report.get("sample_data") else "OPAL ENVIRONMENT REPORT"
         title = summary["name"] + (" · continued" if continued else "")
-        healthy = sum(row["health"] == "Healthy" for row in summary["rows"])
         total = len(summary["rows"])
-        counts = f"{total} services · {healthy} healthy"
+        counts = f"{total} services checked · {len(summary['attention_rows'])} flagged"
+        health, colour = summary["health"], status_colour(summary["health"])
+        if summary.get("all_clear"):
+            health, colour = "All clear", "Good"
+            counts = f"{total} services checked · {len(summaries)} environments"
+        elif health == "Healthy" and any(row["health"] != "Healthy" for row in summary["attention_rows"]):
+            health, colour = "Check services", "Warning"
+        elif health == "Healthy":
+            level = max((image_alert_level(row, report["captured_at"]) for row in summary["attention_rows"]), default=0)
+            health, colour = ("Image age alert", "Attention") if level == 2 else ("Image age warning", "Warning")
         body = [card_text(label, size="Small", isSubtle=True),
                 {"type": "ColumnSet", "spacing": "Small", "columns": [
                     {"type": "Column", "width": "stretch", "items": [card_text(title, size="Large", weight="Bolder")]},
                     {"type": "Column", "width": "auto", "verticalContentAlignment": "Center", "items": [
-                        card_text(summary["health"], color=status_colour(summary["health"]),
+                        card_text(health, color=colour,
                                   weight="Bolder", horizontalAlignment="Right")]},
                 ]},
                 card_text(local_time(report["captured_at"]) + "  ·  " + counts,
@@ -534,7 +575,12 @@ def render_cards(report):
             body.append(card_text("Synthetic data; no live cluster checks", size="Small", color="Warning"))
         for warning in summary["warnings"]:
             body.append(card_text(warning, color="Warning"))
+        if summary.get("all_clear"):
+            body.append(card_text("No service issues or application images aged 12 days or more.", color="Good"))
+            body.append(card_text("Checked: " + ", ".join(clear), size="Small", isSubtle=True))
         body.extend(service_card_row(row, report["captured_at"]) for row in rows)
+        if affected and summary is affected[0] and not continued and clear:
+            body.append(card_text("No alerts: " + ", ".join(clear), size="Small", isSubtle=True))
         details = []
         for row in rows:
             images = row["full_images"] or ["No running pod image available"]
@@ -551,13 +597,19 @@ def render_cards(report):
             "type": "AdaptiveCard", "version": "1.2", "body": details}}] if details else []
         return {"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard",
                 "version": "1.2", "msteams": {"width": "Full"}, "body": body, "actions": actions,
-                "fallbackText": f"Opal · {summary['name']} · {summary['health']} · {counts}"}
+                "fallbackText": f"Opal · {summary['name']} · {health} · {counts}"}
 
+    if not affected:
+        final = card({"name": "All environments", "health": "Healthy", "warnings": [],
+                      "rows": [row for summary in summaries for row in summary["rows"]],
+                      "attention_rows": [], "all_clear": True}, [])
+        if payload_size(final) > MAX_PAYLOAD_BYTES:
+            raise ReportError("Environment heading exceeds the Teams card size limit")
+        return [final]
     cards = []
-    for environment in report["environments"]:
-        summary = summarise_environment(environment)
+    for summary in affected:
         rows, part = [], 0
-        for row in summary["rows"]:
+        for row in summary["attention_rows"]:
             if payload_size(card(summary, rows + [row], part > 0)) > MAX_PAYLOAD_BYTES and rows:
                 cards.append(card(summary, rows, part > 0))
                 rows, part = [], part + 1

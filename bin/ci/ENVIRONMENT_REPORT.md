@@ -6,14 +6,21 @@ Scheduled runs send to Teams when the webhook repository secret is configured.
 Local runs preview by default; `--send` explicitly posts to Teams.
 PR and manual GitHub runs generate reports without sending messages.
 
-Teams shows a separate card for each environment, with coloured status, ready
-replicas, visible image build dates/times, approximate image ages and separate
-pod ages. Every application image version stays visible, including older replicas.
-Image ages are highlighted at 12 days (amber) and 14 days (red), separately from
-service health. Problems stay visible; use
-**Images & details** to expand full image references. Large environments split
+Teams shows only services needing attention: services whose status is not Healthy,
+application images at least 12 days old, and images with unknown or future build
+dates. Failed cluster checks also remain visible. Each affected environment gets
+its own card; clear environments are summarised in one short line. If all checks
+are clear, one brief **All clear** card confirms the environments and service count.
+
+Flagged services show coloured status, ready replicas, image build dates/times,
+approximate image ages and separate pod ages. Every application image version for
+a flagged service stays visible, including older replicas. Image ages are
+highlighted at 12 days (amber) and 14 days (red), separately from service health.
+Use **Images & details** to expand full image references. Large environments split
 across additional cards within the Teams size limit. Markdown and JSON reports
-retain the complete image details.
+retain all services and complete image details, including healthy recent services
+omitted from Teams. Only application images determine age alerts; supporting
+images are available in the expanded details.
 
 Build dates come from the image tag's `YYYYMMDDHHMMSS` suffix, rather than the pod
 creation time. Times are shown as encoded; tags have no timezone, so approximate

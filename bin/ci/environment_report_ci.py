@@ -12,9 +12,10 @@ import sys
 import environment_report as report
 
 
-def sample_resources(service, now, ready=True):
+def sample_resources(service, now, ready=True, image_age_days=2):
     """Small synthetic API response, clearly distinct from live cluster data."""
-    image = f"example.invalid/opal/{service.removeprefix('opal-')}:sample-v1"
+    built = (now - timedelta(days=image_age_days)).strftime("%Y%m%d%H%M%S")
+    image = f"example.invalid/opal/{service.removeprefix('opal-')}:sample-abcdef0-{built}"
     container = {"name": "app", "image": image}
     return [
         {"kind": "Deployment", "metadata": {"name": service, "uid": service, "generation": 1},
@@ -41,7 +42,9 @@ def generate_sample(config, output_dir, now):
             items = []
             for service in environment["expected_services"]:
                 ready = not (environment["name"].lower() == "test" and service == "opal-maintenance-service")
-                items.extend(sample_resources(service, now, ready))
+                image_age_days = 13 if (environment["name"].lower() == "demo"
+                                       and service == "opal-file-handler-service") else 2
+                items.extend(sample_resources(service, now, ready, image_age_days))
             by_context[context] = items
     data = report.generate_report(config, now,
                                      collector=lambda context, namespace: by_context[context])

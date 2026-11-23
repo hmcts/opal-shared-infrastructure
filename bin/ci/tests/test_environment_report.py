@@ -260,7 +260,7 @@ class RenderingTests(unittest.TestCase):
         self.assertNotIn("Restarts:", markdown)
         self.assertIn("fines-service:prod-example", markdown)
 
-    def test_teams_uses_a_separate_card_for_each_environment(self):
+    def test_teams_uses_a_separate_card_for_each_environment_with_alerts(self):
         result = self.sample()
         template = result["environments"][0]
         result["environments"] = [{**copy.deepcopy(template), "name": name}
@@ -274,7 +274,7 @@ class RenderingTests(unittest.TestCase):
 
     def test_build_date_and_time_are_visible_separately_from_pod_age(self):
         image = "hmctsprod.azurecr.io/opal/fines-service:prod-b4ae8c7-20261120173110"
-        result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
+        result = report.generate_report(config(), NOW, lambda *_: resources(image=image, ready=False))
         card = report.render_cards(result)[0]
         visible = json.dumps(card["body"], ensure_ascii=False)
         self.assertIn("prod · b4ae8c7", visible)
@@ -283,7 +283,7 @@ class RenderingTests(unittest.TestCase):
         self.assertIn("Pod age 2d3h", visible)
         self.assertIn(image, json.dumps(card["actions"]))
         self.assertIn("prod-b4ae8c7-20261120173110", report.render_markdown(result))
-        self.assertIn("Good", visible)
+        self.assertIn("Attention", visible)
 
     def test_attention_and_failure_reasons_stay_visible_without_expanding(self):
         items = resources(ready=False)
@@ -321,7 +321,97 @@ class RenderingTests(unittest.TestCase):
                     self.assertNotIn("14", detail["text"].split(" old", 1)[-1])
                 result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
                 card = report.render_cards(result)[0]
-                self.assertEqual(card["body"][1]["columns"][1]["items"][0]["text"], "Healthy")
+                self.assertEqual(report.summarise_environment(result["environments"][0])["rows"][0]["health"], "Healthy")
+                visible = json.dumps(card["body"])
+                if warning:
+                    self.assertIn(warning, visible)
+                    self.assertIn("Image age", visible)
+                    self.assertIn("1 flagged", visible)
+                else:
+                    self.assertIn("All clear", visible)
+                    self.assertNotIn("Built ", visible)
+
+    def test_all_clear_is_one_brief_card_with_all_environments_and_no_service_detail(self):
+        image = "fines-service:prod-b4ae8c7-20261122090000"
+        result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
+        template = result["environments"][0]
+        result["environments"] = [{**copy.deepcopy(template), "name": name}
+                                  for name in ("Staging", "Demo", "ITHC", "Test")]
+        cards = report.render_cards(result)
+        self.assertEqual(len(cards), 1)
+        visible = json.dumps(cards[0]["body"])
+        self.assertIn("All clear", visible)
+        self.assertIn("4 services checked", visible)
+        for name in ("Staging", "Demo", "ITHC", "Test"):
+            self.assertIn(name, visible)
+        self.assertNotIn("Built ", visible)
+        self.assertNotIn("b4ae8c7", visible)
+        self.assertEqual(cards[0]["actions"], [])
+        self.assertIn(image, report.render_markdown(result))
+
+    def test_only_unhealthy_or_aging_services_appear_in_teams(self):
+        conf = config()
+        conf["environments"][0]["expected_services"] += ["opal-logging-service", "opal-user-service"]
+        items = (resources(image="fines-service:prod-aaaaaaa-20261122090000", ready=False)
+                 + resources(name="opal-logging-service", image="logging-service:prod-bbbbbbb-20261110090000")
+                 + resources(name="opal-user-service", image="user-service:prod-ccccccc-20261122090000"))
+        result = report.generate_report(conf, NOW, lambda *_: items)
+        card = report.render_cards(result)[0]
+        body = json.dumps(card["body"], ensure_ascii=False)
+        self.assertIn("3 services checked · 2 flagged", body)
+        self.assertIn("aaaaaaa", body)
+        self.assertIn("bbbbbbb", body)
+        self.assertNotIn("ccccccc", json.dumps(card))
+        self.assertIn("ccccccc", report.render_markdown(result))
+        self.assertIn("ccccccc", json.dumps(result))
+
+    def test_clear_environments_are_summarised_beside_the_affected_environment(self):
+        result = report.generate_report(config(), NOW,
+                                       lambda *_: resources(image="fines-service:prod-aaaaaaa-20261122090000"))
+        template = result["environments"][0]
+        result["environments"] = [{**copy.deepcopy(template), "name": name}
+                                  for name in ("Staging", "Demo", "ITHC", "Test")]
+        result["environments"][-1]["clusters"][0]["rows"][0]["health"] = "Attention"
+        cards = report.render_cards(result)
+        self.assertEqual(len(cards), 1)
+        self.assertEqual(cards[0]["body"][1]["columns"][0]["items"][0]["text"], "Test")
+        self.assertIn("No alerts: Staging, Demo, ITHC", json.dumps(cards[0]["body"]))
+
+    def test_old_supporting_image_does_not_flag_a_recent_application_image(self):
+        result = report.generate_report(config(), NOW,
+                                       lambda *_: resources(image="fines-service:prod-aaaaaaa-20261122090000"))
+        result["environments"][0]["clusters"][0]["rows"][0]["running_images"].append(
+            "redis=registry.example/redis:prod-bbbbbbb-20260101090000")
+        self.assertIn("All clear", json.dumps(report.render_cards(result)))
+
+    def test_unknown_build_age_prevents_a_false_all_clear(self):
+        card = report.render_cards(self.sample())[0]
+        visible = json.dumps(card["body"])
+        self.assertIn("Image age warning", visible)
+        self.assertIn("Build date unavailable", visible)
+        self.assertNotIn("All clear", visible)
+
+    def test_scaled_down_service_stays_visible(self):
+        result = self.sample()
+        row = result["environments"][0]["clusters"][0]["rows"][0]
+        row.update(health="Scaled to zero", ready=0, desired=0, running_images=[], pod_age="No pods")
+        visible = json.dumps(report.render_cards(result))
+        self.assertIn("Scaled to zero", visible)
+        self.assertIn("Check services", visible)
+        self.assertNotIn("All clear", visible)
+
+    def test_card_exports_remove_obsolete_numbered_files_only(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            for name in ("teams-card-2.json", "teams-card-4.json", "teams-card-notes.json", "report.json"):
+                (directory / name).write_text("keep")
+            cards = report.render_cards(self.sample())
+            report.write_card_files(directory, cards)
+            self.assertTrue((directory / "teams-card-1.json").is_file())
+            self.assertFalse((directory / "teams-card-2.json").exists())
+            self.assertFalse((directory / "teams-card-4.json").exists())
+            self.assertEqual((directory / "teams-card-notes.json").read_text(), "keep")
+            self.assertEqual((directory / "report.json").read_text(), "keep")
 
     def test_oldest_build_stays_visible_when_more_than_two_versions_are_running(self):
         versions = ["prod-aaaaaaa-20261123080000", "prod-bbbbbbb-20261122080000",
@@ -361,6 +451,7 @@ class RenderingTests(unittest.TestCase):
         card = report.render_cards(result)[0]
         self.assertIn("Check failed", json.dumps(card["body"]))
         self.assertIn("ss-stg-00-aks", json.dumps(card["body"]))
+        self.assertNotIn("All clear", json.dumps(card))
         self.assertEqual(card["actions"], [])
 
     def test_two_clusters_share_a_row_without_hiding_different_images(self):

@@ -38,6 +38,11 @@ class CISampleTests(unittest.TestCase):
             self.assertIn("## Test — Attention", markdown)
             self.assertFalse((directory / "state.json").exists())
             cards = json.loads((directory / "teams-cards.json").read_text())
+            self.assertEqual([card["body"][1]["columns"][0]["items"][0]["text"] for card in cards],
+                             ["Demo", "Test"])
+            self.assertIn("nearing 14 days", json.dumps(cards[0]))
+            self.assertIn("PodInitializing", json.dumps(cards[1]))
+            self.assertIn("No alerts: Staging, ITHC", json.dumps(cards[0]))
             for index, card in enumerate(cards, 1):
                 self.assertEqual(json.loads((directory / f"teams-card-{index}.json").read_text()), card)
                 self.assertIn("SAMPLE", card["body"][0]["text"])
