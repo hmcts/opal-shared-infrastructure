@@ -435,41 +435,57 @@ def card_text(value, **style):
     return {"type": "TextBlock", "text": value, "wrap": True, **style}
 
 
-def version_summary(row):
-    """Show app build references; retain every full image in the expandable details."""
+def application_images(row):
+    """Keep every app version visible, including old replicas during a rollout."""
     images = row["image"].split("; ") if row["image"] != "—" else []
     primary = [image for image in images
                if service_name(re.split(r"[:@]", image, maxsplit=1)[0]) == row["name"]]
-    selected = primary or images
-    labels = []
-    for image in selected[:2]:
-        if "@" in image:
-            label = image.split("@", 1)[1][:19]
-        else:
-            label = image.partition(":")[2] or image
-            build = re.fullmatch(r"(.+)-([a-fA-F0-9]{7,40})-\d{14}", label)
-            if build:
-                label = f"{build[1]} · {build[2][:7]}"
-        labels.append(clipped(label, 70))
-    extra = len(images) - min(2, len(selected))
-    if extra:
-        labels.append(f"+{extra} image{'s' if extra != 1 else ''}")
-    return " / ".join(dict.fromkeys(labels)) or "Image unavailable"
+    return primary or images, len(images) - len(primary or images)
 
 
-def service_card_row(row):
+def image_build_detail(image, captured_at):
+    """Read build time from the tag; it is not registry creation/expiry metadata."""
+    tag = image.split("@", 1)[0].partition(":")[2]
+    build = re.fullmatch(r"(.+)-([a-fA-F0-9]{7,40})-(\d{14})", tag)
+    reference = f"{build[1]} · {build[2][:7]}" if build else tag or image
+    date_match = re.search(r"(?:^|-)(\d{14})$", tag)
+    try:
+        built = datetime.strptime(date_match[1], "%Y%m%d%H%M%S") if date_match else None
+    except ValueError:
+        built = None
+    if built is None:
+        return card_text("Build date unavailable · " + clipped(reference, 100),
+                         size="Small", spacing="Small")
+    # Tags do not encode a zone. Preserve their wall time and approximate age as UTC.
+    seconds = (timestamp(captured_at) - built.replace(tzinfo=timezone.utc)).total_seconds()
+    elapsed = "~" + age(seconds).replace(" ", "") + " old" if seconds >= 0 else "future tag date"
+    warning, colour = "", "Default"
+    if seconds >= 14 * 86400:
+        warning, colour = " · 14+ days old", "Attention"
+    elif seconds >= 12 * 86400:
+        warning, colour = " · nearing 14 days", "Warning"
+    return card_text(f"Built {built:%d %b %Y %H:%M:%S} · {elapsed}{warning} · {clipped(reference, 100)}",
+                     size="Small", spacing="Small", color=colour)
+
+
+def service_card_row(row, captured_at):
     health, replicas = row["health"], row["replicas"]
     status = f"✓ {replicas} ready" if health == "Healthy" else f"{health} · {replicas}"
     pod_age = row["age"].replace(" ", "")
-    metadata = version_summary(row)
-    if pod_age != "—":
-        metadata = f"Age {pod_age}  ·  {metadata}"
     items = [{"type": "ColumnSet", "columns": [
         {"type": "Column", "width": "stretch", "items": [card_text(row["name"], weight="Bolder")]},
         {"type": "Column", "width": "auto", "items": [
             card_text(status, color=status_colour(health), size="Small", weight="Bolder",
                       horizontalAlignment="Right")]},
-    ]}, card_text(metadata, size="Small", isSubtle=True, spacing="Small")]
+    ]}]
+    images, supporting = application_images(row)
+    items.extend(image_build_detail(image, captured_at) for image in images)
+    if not images:
+        items.append(card_text("Build date unavailable · No running image", size="Small", spacing="Small"))
+    metadata = f"Pod age {pod_age}"
+    if supporting:
+        metadata += f" · +{supporting} supporting image{'s' if supporting != 1 else ''} in details"
+    items.append(card_text(metadata, size="Small", isSubtle=True, spacing="Small"))
     if row["notes"]:
         items.append(card_text(clipped(row["notes"], 350), size="Small", spacing="Small",
                                color=status_colour(health)))
@@ -518,12 +534,12 @@ def render_cards(report):
             body.append(card_text("Synthetic data; no live cluster checks", size="Small", color="Warning"))
         for warning in summary["warnings"]:
             body.append(card_text(warning, color="Warning"))
-        body.extend(service_card_row(row) for row in rows)
+        body.extend(service_card_row(row, report["captured_at"]) for row in rows)
         details = []
         for row in rows:
             images = row["full_images"] or ["No running pod image available"]
             detail = [card_text(row["name"], weight="Bolder"),
-                      card_text(f"{row['health']} · {row['replicas']} ready · Age {row['age']}",
+                      card_text(f"{row['health']} · {row['replicas']} ready · Pod age {row['age']}",
                                 size="Small", isSubtle=True, spacing="Small")]
             detail.extend(card_text(image, size="Small", spacing="Small") for image in images)
             if row["notes"]:

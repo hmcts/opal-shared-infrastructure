@@ -272,15 +272,17 @@ class RenderingTests(unittest.TestCase):
             self.assertEqual(card["actions"][0]["type"], "Action.ShowCard")
             self.assertLessEqual(report.payload_size(card), report.MAX_PAYLOAD_BYTES)
 
-    def test_build_references_are_short_but_full_images_remain_expandable(self):
-        image = "hmctsprod.azurecr.io/opal/fines-service:prod-b4ae8c7-20261123132059"
+    def test_build_date_and_time_are_visible_separately_from_pod_age(self):
+        image = "hmctsprod.azurecr.io/opal/fines-service:prod-b4ae8c7-20261120173110"
         result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
         card = report.render_cards(result)[0]
         visible = json.dumps(card["body"], ensure_ascii=False)
         self.assertIn("prod · b4ae8c7", visible)
-        self.assertNotIn("20261123132059", visible)
+        self.assertIn("Built 20 Nov 2026 17:31:10", visible)
+        self.assertIn("~2d15h old", visible)
+        self.assertIn("Pod age 2d3h", visible)
         self.assertIn(image, json.dumps(card["actions"]))
-        self.assertIn("prod-b4ae8c7-20261123132059", report.render_markdown(result))
+        self.assertIn("prod-b4ae8c7-20261120173110", report.render_markdown(result))
         self.assertIn("Good", visible)
 
     def test_attention_and_failure_reasons_stay_visible_without_expanding(self):
@@ -294,12 +296,65 @@ class RenderingTests(unittest.TestCase):
 
     def test_image_summary_keeps_multiple_app_versions_and_counts_supporting_images(self):
         row = {"name": "frontend", "image": "frontend:prod-8129632-20261120194505; "
-               "frontend:staging-fafbcdf-20261123175338; postgresql:17.5.0; redis:8.2.1"}
-        summary = report.version_summary(row)
+               "frontend:staging-fafbcdf-20261123075338; postgresql:17.5.0; redis:8.2.1",
+               "health": "Healthy", "replicas": "2/2", "age": "1h 5m", "notes": ""}
+        summary = json.dumps(report.service_card_row(row, report.iso(NOW)), ensure_ascii=False)
         self.assertIn("prod · 8129632", summary)
         self.assertIn("staging · fafbcdf", summary)
-        self.assertIn("+2 images", summary)
-        self.assertNotIn("202611", summary)
+        self.assertIn("Built 20 Nov 2026 19:45:05", summary)
+        self.assertIn("Built 23 Nov 2026 07:53:38", summary)
+        self.assertIn("+2 supporting images in details", summary)
+
+    def test_image_age_warning_boundaries_do_not_change_service_health(self):
+        for delta, colour, warning in (
+                (timedelta(days=12, seconds=-1), "Default", None),
+                (timedelta(days=12), "Warning", "nearing 14 days"),
+                (timedelta(days=14, seconds=-1), "Warning", "nearing 14 days"),
+                (timedelta(days=14), "Attention", "14+ days old")):
+            with self.subTest(delta=delta):
+                image = "fines-service:prod-b4ae8c7-" + (NOW - delta).strftime("%Y%m%d%H%M%S")
+                detail = report.image_build_detail(image, report.iso(NOW))
+                self.assertEqual(detail["color"], colour)
+                if warning:
+                    self.assertIn(warning, detail["text"])
+                else:
+                    self.assertNotIn("14", detail["text"].split(" old", 1)[-1])
+                result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
+                card = report.render_cards(result)[0]
+                self.assertEqual(card["body"][1]["columns"][1]["items"][0]["text"], "Healthy")
+
+    def test_oldest_build_stays_visible_when_more_than_two_versions_are_running(self):
+        versions = ["prod-aaaaaaa-20261123080000", "prod-bbbbbbb-20261122080000",
+                    "prod-ccccccc-20261101080000"]
+        result = report.generate_report(config(["00", "01", "02"]), NOW,
+                    lambda context, _: resources(image="fines-service:" + versions[int(context)]))
+        visible = json.dumps(report.render_cards(result)[0]["body"])
+        self.assertIn("Built 01 Nov 2026 08:00:00", visible)
+        self.assertIn("14+ days old", visible)
+        self.assertIn("Built 22 Nov 2026 08:00:00", visible)
+        self.assertIn("Built 23 Nov 2026 08:00:00", visible)
+
+    def test_missing_or_invalid_tag_dates_never_use_pod_age_as_build_age(self):
+        for image in ("fines-service:latest", "fines-service@sha256:abcdef",
+                      "fines-service:prod-abcdef0-20260230090000", "fines-service:1.2.3"):
+            with self.subTest(image=image):
+                result = report.generate_report(config(), NOW, lambda *_: resources(image=image))
+                visible = json.dumps(report.render_cards(result)[0]["body"])
+                self.assertIn("Build date unavailable", visible)
+                self.assertIn("Pod age 2d3h", visible)
+                self.assertNotIn("~2d3h old", visible)
+
+    def test_future_tag_is_explicit_instead_of_showing_zero_age(self):
+        detail = report.image_build_detail("fines-service:prod-abcdef0-20261124090000", report.iso(NOW))
+        self.assertIn("Built 24 Nov 2026 09:00:00", detail["text"])
+        self.assertIn("future tag date", detail["text"])
+        self.assertNotIn("~0m old", detail["text"])
+
+    def test_build_tag_wall_time_is_preserved_in_summer_and_with_digest(self):
+        detail = report.image_build_detail(
+            "frontend:staging-abcdef0-20260701080000@sha256:abcdef", "2026-07-01T09:00:00Z")
+        self.assertIn("Built 01 Jul 2026 08:00:00", detail["text"])
+        self.assertIn("~1h0m old", detail["text"])
 
     def test_failed_cluster_card_keeps_warning_and_has_no_empty_details_button(self):
         result = report.generate_report(config(), NOW, Mock(side_effect=report.ReportError("No access")))

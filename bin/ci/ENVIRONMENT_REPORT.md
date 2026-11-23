@@ -7,10 +7,20 @@ Local runs preview by default; `--send` explicitly posts to Teams.
 PR and manual GitHub runs generate reports without sending messages.
 
 Teams shows a separate card for each environment, with coloured status, ready
-replicas, compact ages and short build references. Problems stay visible; use
+replicas, visible image build dates/times, approximate image ages and separate
+pod ages. Every application image version stays visible, including older replicas.
+Image ages are highlighted at 12 days (amber) and 14 days (red), separately from
+service health. Problems stay visible; use
 **Images & details** to expand full image references. Large environments split
 across additional cards within the Teams size limit. Markdown and JSON reports
 retain the complete image details.
+
+Build dates come from the image tag's `YYYYMMDDHHMMSS` suffix, rather than the pod
+creation time. Times are shown as encoded; tags have no timezone, so approximate
+image ages assume UTC. Tags without a valid timestamp show **Build date unavailable**.
+The age highlights help check the two-week retention window; they do not verify
+registry availability, an expiry date or whether a build reverted. No registry
+credentials or previous-run comparison are needed.
 
 ## Run locally
 
