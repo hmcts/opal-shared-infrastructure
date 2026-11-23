@@ -16,3 +16,6 @@
 
 /ssh/bais-sftp-key-full.sh
 /bais-emulator/data/**/.ssh/
+
+# Generated daily environment reports
+/.environment-report/

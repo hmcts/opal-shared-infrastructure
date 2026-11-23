@@ -1,0 +1,14 @@
+# Apply in the opal namespace of each monitored cluster, then bind your runner's
+# identity to this Role. Authentication and RoleBindings are deployment-specific.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: opal-environment-reporter
+  namespace: opal
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets, daemonsets, replicasets]
+    verbs: [get, list]

@@ -1,0 +1,161 @@
+name: Environment report
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/environment-report.yml'
+      - 'bin/ci/environment_report*.py'
+      - 'bin/ci/environment-report*.json'
+      - 'bin/ci/environment-report-rbac.yaml'
+      - 'bin/ci/teams_card.py'
+      - 'bin/ci/tests/**'
+      - 'bin/ci/ENVIRONMENT_REPORT.md'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'
+      timezone: Europe/London
+
+permissions:
+  contents: read
+
+concurrency:
+  group: environment-report-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    name: Tests and sample report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      azure-configured: ${{ steps.connection.outputs.configured }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Run offline tests
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest discover -s bin/ci/tests -v
+      - name: Generate sample report without cluster access
+        run: python3 bin/ci/environment_report_ci.py sample
+      - name: Show sample report
+        run: cat .environment-report/sample/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload sample report
+        uses: actions/upload-artifact@v7
+        with:
+          name: environment-report-sample-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .environment-report/sample/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - name: Check cluster connection setup
+        id: connection
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.OPAL_REPORT_AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.OPAL_REPORT_AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.OPAL_REPORT_AZURE_SUBSCRIPTION_ID }}
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ] && [ -n "$AZURE_TENANT_ID" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ]; then
+            printf 'configured=true\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'configured=false\n' >> "$GITHUB_OUTPUT"
+            printf '%s\n' 'Cluster connection secrets are unavailable. See bin/ci/ENVIRONMENT_REPORT.md. Fork PRs run the sample only.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  report:
+    name: Current cluster report
+    needs: preview
+    # Real reports run automatically once the Azure connection settings exist.
+    # Fork PRs run tests/sample only; no pull_request_target trigger is used.
+    if: >-
+      needs.preview.outputs.azure-configured == 'true' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ${{ vars.OPAL_REPORT_RUNNER || 'ubuntu-latest' }}
+    environment: opal-environment-report
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      AZURE_CORE_OUTPUT: none
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Isolate temporary cluster credentials
+        run: |
+          REPORT_CREDENTIAL_DIR="$(mktemp -d "$RUNNER_TEMP/opal-report.XXXXXX")"
+          printf 'AZURE_CONFIG_DIR=%s/azure\nKUBECONFIG=%s/kubeconfig\n' "$REPORT_CREDENTIAL_DIR" "$REPORT_CREDENTIAL_DIR" >> "$GITHUB_ENV"
+      - name: Verify live connection settings
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.OPAL_REPORT_AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.OPAL_REPORT_AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.OPAL_REPORT_AZURE_SUBSCRIPTION_ID }}
+        run: |
+          for setting in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID; do
+            if [ -z "${!setting}" ]; then
+              printf 'Missing %s. See bin/ci/ENVIRONMENT_REPORT.md.\n' "$setting" >&2
+              exit 1
+            fi
+          done
+          command -v az
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.OPAL_REPORT_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.OPAL_REPORT_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.OPAL_REPORT_AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+      - uses: azure/use-kubelogin@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          kubelogin-version: latest
+      - name: Prepare cluster contexts
+        run: python3 bin/ci/environment_report_ci.py contexts
+      - name: Generate current report
+        id: report
+        env:
+          # Only scheduled runs receive the webhook; PRs/manual runs are previews.
+          OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK: ${{ github.event_name == 'schedule' && secrets.OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK || '' }}
+        run: |
+          REPORT_ARGS=()
+          if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            if [ -n "$OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK" ]; then
+              REPORT_ARGS+=(--send)
+            else
+              printf '%s\n' '::warning::Teams delivery skipped: add repository secret OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK.'
+            fi
+          fi
+          python3 bin/ci/environment_report.py "${REPORT_ARGS[@]}"
+      - name: Show current report
+        if: always() && steps.report.outcome != 'skipped'
+        run: |
+          if [ -f .environment-report/output/report.md ]; then
+            cat .environment-report/output/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload current report
+        if: always() && steps.report.outcome != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: environment-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .environment-report/output/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Remove temporary cluster credentials
+        if: always()
+        run: rm -f -- "$KUBECONFIG"
+
+# Teams delivery is limited to scheduled runs with a configured webhook secret.
