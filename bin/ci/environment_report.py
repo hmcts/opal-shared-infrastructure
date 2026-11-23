@@ -4,6 +4,7 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+import getpass
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import warnings
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -523,11 +525,19 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=HERE / "environment-report.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / ".environment-report/output")
-    parser.add_argument("--send", action="store_true", help="Explicitly send using OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK")
+    parser.add_argument("--send", action="store_true",
+                        help="Send to Teams; use OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK or enter the URL when prompted")
     args = parser.parse_args(argv)
     try:
         args.output_dir = args.output_dir.expanduser().resolve()
         webhook = os.environ.get("OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK", "")
+        if args.send and not webhook and sys.stdin.isatty():
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", getpass.GetPassWarning)
+                    webhook = getpass.getpass("Teams Workflow webhook URL (hidden): ").strip()
+            except (EOFError, KeyboardInterrupt, getpass.GetPassWarning):
+                raise ReportError("Webhook entry cancelled or hidden input unavailable; no message sent") from None
         if args.send and not webhook:
             raise ReportError("--send requires OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK")
         config = load_config(args.config)

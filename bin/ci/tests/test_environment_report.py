@@ -403,9 +403,47 @@ class ExecutionTests(unittest.TestCase):
         self.assertIsInstance(json.loads((self.out / "teams-cards.json").read_text()), list)
 
     def test_missing_webhook_with_send_stops_before_cluster_queries(self):
-        with patch.dict(os.environ, {}, clear=True), patch.object(report, "generate_report") as generate, patch("builtins.print"):
+        with patch.dict(os.environ, {}, clear=True), patch.object(report, "generate_report") as generate, \
+                patch.object(report.sys.stdin, "isatty", return_value=False), \
+                patch.object(report.getpass, "getpass") as prompt, patch("builtins.print"):
             self.assertEqual(report.main(self.args + ["--send"]), 1)
         generate.assert_not_called()
+        prompt.assert_not_called()
+
+    def test_local_send_prompts_without_saving_or_printing_the_webhook(self):
+        webhook = "https://example.invalid/local-secret"
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(report.sys.stdin, "isatty", return_value=True), \
+                patch.object(report.getpass, "getpass", return_value=webhook) as prompt, \
+                patch.object(report, "collect", return_value=resources()), \
+                patch.object(report, "send_cards") as send, patch("builtins.print") as output:
+            self.assertEqual(report.main(self.args + ["--send"]), 0)
+        prompt.assert_called_once()
+        self.assertEqual(send.call_args.args[1], webhook)
+        self.assertNotIn(webhook, str(output.call_args_list))
+        for path in self.out.iterdir():
+            self.assertNotIn(webhook, path.read_text())
+
+    def test_local_preview_never_prompts_or_sends(self):
+        with patch.dict(os.environ, {}, clear=True), \
+                patch.object(report.sys.stdin, "isatty", return_value=True), \
+                patch.object(report.getpass, "getpass") as prompt, \
+                patch.object(report, "collect", return_value=resources()), \
+                patch.object(report, "send_cards") as send, patch("builtins.print"):
+            self.assertEqual(report.main(self.args), 0)
+        prompt.assert_not_called()
+        send.assert_not_called()
+
+    def test_cancelled_or_unhidden_webhook_entry_stops_before_cluster_queries(self):
+        for error in (EOFError(), KeyboardInterrupt(), report.getpass.GetPassWarning()):
+            with self.subTest(error=type(error).__name__), patch.dict(os.environ, {}, clear=True), \
+                    patch.object(report.sys.stdin, "isatty", return_value=True), \
+                    patch.object(report.getpass, "getpass", side_effect=error), \
+                    patch.object(report, "generate_report") as generate, \
+                    patch.object(report, "send_cards") as send, patch("builtins.print"):
+                self.assertEqual(report.main(self.args + ["--send"]), 1)
+            generate.assert_not_called()
+            send.assert_not_called()
 
     def test_optional_context_must_reference_a_configured_context(self):
         conf = config()

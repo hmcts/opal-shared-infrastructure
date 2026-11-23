@@ -3,9 +3,14 @@
 A snapshot of **service, status, ready replicas, pod age and image**, grouped by
 Staging, Demo, ITHC and Test. There is no saved history or comparison between runs.
 Scheduled runs send to Teams when the webhook repository secret is configured.
-Local, PR and manual runs generate reports without sending messages.
+Local runs preview by default; `--send` explicitly posts to Teams.
+PR and manual GitHub runs generate reports without sending messages.
 
 ## Run locally
+
+Use your existing Kubernetes contexts, with kubectl and Python 3.9+ installed,
+your usual Azure sign-in active, and any required VPN connected. If your Azure
+session has expired, run `az login` first.
 
 ```sh
 python3 bin/ci/environment_report.py
@@ -15,6 +20,18 @@ The script prints the full saved path. Files are written to
 `.environment-report/output/` in this repository, regardless of your current
 folder. Open `report.md`; `report.json` contains cluster details and
 `teams-cards.json` contains prepared Teams cards.
+
+To generate the current report and post it to your Teams Workflow endpoint:
+
+```sh
+python3 bin/ci/environment_report.py --send
+```
+
+Paste the webhook URL at the hidden prompt and press Enter. The URL is used only
+for that run; it is not saved in the code, report files or shell history.
+If `OPAL_ENVIRONMENT_REPORT_TEAMS_WEBHOOK` is already set, the script uses it
+without prompting. Local runs use your existing cluster authentication and do
+not need the GitHub Azure secrets or federated credential.
 
 ## Test from a PR
 
