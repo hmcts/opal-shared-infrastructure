@@ -79,7 +79,7 @@ def load_config(path):
     return config
 
 
-def write_json(path, data):
+def write_json(path, data, compact=False):
     """Write report files atomically, including on mounted volumes."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -87,7 +87,8 @@ def write_json(path, data):
     try:
         with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as handle:
             temporary = Path(handle.name)
-            json.dump(data, handle, indent=2, ensure_ascii=False)
+            json.dump(data, handle, indent=None if compact else 2, ensure_ascii=False,
+                      separators=(",", ":") if compact else None)
             handle.write("\n")
         os.replace(temporary, path)
     finally:
@@ -446,6 +447,13 @@ def payload_size(card):
     return len(encode_payload(card))
 
 
+def write_card_files(output_dir, cards):
+    """Keep the collection for tools and export single card objects for manual use."""
+    write_json(output_dir / "teams-cards.json", cards, compact=True)
+    for index, card in enumerate(cards, 1):
+        write_json(output_dir / f"teams-card-{index}.json", card, compact=True)
+
+
 def render_cards(report):
     """Use the same compact service summary as Markdown; repeat headings on splits."""
     def card(body):
@@ -599,7 +607,7 @@ def main(argv=None):
         cards = render_cards(report)
         args.output_dir.mkdir(parents=True, exist_ok=True)
         write_json(args.output_dir / "report.json", report)
-        write_json(args.output_dir / "teams-cards.json", cards)
+        write_card_files(args.output_dir, cards)
         markdown = render_markdown(report)
         (args.output_dir / "report.md").write_text(markdown)
         print(markdown)

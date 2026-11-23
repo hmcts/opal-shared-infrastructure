@@ -38,7 +38,8 @@ class CISampleTests(unittest.TestCase):
             self.assertIn("## Test — Attention", markdown)
             self.assertFalse((directory / "state.json").exists())
             cards = json.loads((directory / "teams-cards.json").read_text())
-            for card in cards:
+            for index, card in enumerate(cards, 1):
+                self.assertEqual(json.loads((directory / f"teams-card-{index}.json").read_text()), card)
                 self.assertIn("SAMPLE", card["body"][0]["items"][0]["text"])
                 self.assertLessEqual(report.payload_size(card), report.MAX_PAYLOAD_BYTES)
 

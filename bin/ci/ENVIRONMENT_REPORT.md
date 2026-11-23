@@ -19,7 +19,10 @@ python3 bin/ci/environment_report.py
 The script prints the full saved path. Files are written to
 `.environment-report/output/` in this repository, regardless of your current
 folder. Open `report.md`; `report.json` contains cluster details and
-`teams-cards.json` contains prepared Teams cards.
+`teams-cards.json` contains the card collection for tools. The compact files
+`teams-card-1.json`, `teams-card-2.json`, etc. each contain one card object for
+manual use. Paste one individual file's contents into an Adaptive Card field;
+the collection file is an array and is not a single Adaptive Card.
 
 To generate the current report and post it to your Teams Workflow endpoint:
 
@@ -143,6 +146,23 @@ The script already sends the prepared cards to that URL. The Teams workflow
 chooses the destination, so no channel name is stored in the report configuration.
 Without the secret, scheduled runs still generate the report and show a warning
 that Teams delivery was skipped. To stop delivery later, remove the secret.
+
+In the workflow's **Post card in a chat or channel** action, set the **Adaptive
+Card** field to the incoming attachment's **content**. For a posting action
+directly after the webhook trigger, use this expression:
+
+```text
+first(triggerBody()?['attachments'])?['content']
+```
+
+If the posting action is inside a loop over incoming attachments, use the current
+attachment's `content` instead. The script sends one attachment per request.
+Do not paste `teams-cards.json`, a whole webhook request, or a formatted card
+collection into that field. Teams posting actions have an approximately 28 KB
+limit; the script splits outbound cards below 26 KB, but adding formatted JSON
+as a string can exceed the limit. Use the individual compact exports for a
+manual test. A webhook acceptance confirms receipt; check workflow run history
+to confirm the posting action succeeded.
 
 ## Report configuration
 

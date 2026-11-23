@@ -401,6 +401,9 @@ class ExecutionTests(unittest.TestCase):
         send.assert_not_called()
         self.assertTrue((self.out / "report.md").is_file())
         self.assertIsInstance(json.loads((self.out / "teams-cards.json").read_text()), list)
+        card = json.loads((self.out / "teams-card-1.json").read_text())
+        self.assertEqual(card["type"], "AdaptiveCard")
+        self.assertEqual(card, json.loads((self.out / "teams-cards.json").read_text())[0])
 
     def test_missing_webhook_with_send_stops_before_cluster_queries(self):
         with patch.dict(os.environ, {}, clear=True), patch.object(report, "generate_report") as generate, \
@@ -545,6 +548,19 @@ class ExecutionTests(unittest.TestCase):
 
 class TeamsAuthenticationTests(unittest.TestCase):
     webhook = "https://example.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/test/triggers/manual/paths/invoke"
+
+    def test_exported_card_files_are_compact_objects_without_an_array_wrapper(self):
+        cards = [{"type": "AdaptiveCard", "body": [{"type": "TextBlock", "text": "⚠" * 4000}]}] * 2
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            report.write_card_files(output, cards)
+            self.assertEqual(json.loads((output / "teams-cards.json").read_text()), cards)
+            for index, card in enumerate(cards, 1):
+                data = (output / f"teams-card-{index}.json").read_bytes()
+                self.assertEqual(json.loads(data), card)
+                self.assertTrue(data.startswith(b"{"))
+                self.assertEqual(data.count(b"\n"), 1)
+                self.assertLess(len(data), 26000)
 
     def test_azure_cli_token_uses_the_power_automate_audience(self):
         with patch.object(report.subprocess, "run", return_value=Mock(returncode=0, stdout="PRIVATE_TOKEN\n")) as run:

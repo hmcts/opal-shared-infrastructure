@@ -49,7 +49,7 @@ def generate_sample(config, output_dir, now):
     cards = report.render_cards(data)
     output_dir.mkdir(parents=True, exist_ok=True)
     report.write_json(output_dir / "report.json", data)
-    report.write_json(output_dir / "teams-cards.json", cards)
+    report.write_card_files(output_dir, cards)
     (output_dir / "report.md").write_text(report.render_markdown(data))
     print(f"Sample report saved to: {(output_dir / 'report.md').resolve()}")
 
