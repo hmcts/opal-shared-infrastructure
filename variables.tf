@@ -51,6 +51,33 @@ variable "managed_identity_object_id" {
   default = null
 }
 
+variable "servicebus_receiver_group_object_id" {
+  description = "Object ID of DTS Opal Developers Production in prod, or DTS Opal Developers NonProd in every non-production environment."
+  type        = string
+  nullable    = false
+}
+
+variable "servicebus_topic_sender_object_id" {
+  description = "Principal for the existing topic-module Sender grant when it differs from CSDS. Preserve the existing grant; Opal receives a separate grant when needed."
+  type        = string
+  default     = null
+}
+
+variable "servicebus_preview_reference_data_access" {
+  description = "Existing preview topic and subscription ARM IDs receiving Sender and Receiver grants for this environment's Opal managed identity."
+  type = map(object({
+    topic_id        = string
+    subscription_id = string
+  }))
+  default  = {}
+  nullable = false
+
+  validation {
+    condition     = alltrue([for access in values(var.servicebus_preview_reference_data_access) : startswith(access.subscription_id, "${access.topic_id}/subscriptions/")])
+    error_message = "Each preview subscription must belong to its configured topic."
+  }
+}
+
 variable "csds_managed_identity_object_id" {
   default = ""
 }
