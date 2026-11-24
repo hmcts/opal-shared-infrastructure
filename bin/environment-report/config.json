@@ -1,0 +1,76 @@
+{
+  "namespace": "opal",
+  "excluded_services": [
+    "opal-frontend-test",
+    "opal-legacy-db-stub"
+  ],
+  "environments": [
+    {
+      "name": "Staging",
+      "contexts": [
+        "ss-stg-00-aks",
+        "ss-stg-01-aks"
+      ],
+      "optional_contexts": [
+        "ss-stg-00-aks"
+      ],
+      "expected_services": [
+        "opal-fines-service",
+        "opal-logging-service",
+        "opal-user-service",
+        "opal-file-handler-service",
+        "opal-maintenance-service",
+        "opal-frontend",
+        "opal-rm-frontend",
+        "opal-external-api"
+      ]
+    },
+    {
+      "name": "Demo",
+      "contexts": [
+        "ss-demo-00-aks",
+        "ss-demo-01-aks"
+      ],
+      "expected_services": [
+        "opal-fines-service",
+        "opal-logging-service",
+        "opal-user-service",
+        "opal-file-handler-service",
+        "opal-maintenance-service",
+        "opal-frontend",
+        "opal-rm-frontend"
+      ]
+    },
+    {
+      "name": "ITHC",
+      "contexts": [
+        "ss-ithc-00-aks"
+      ],
+      "expected_services": [
+        "opal-fines-service",
+        "opal-logging-service",
+        "opal-user-service",
+        "opal-file-handler-service",
+        "opal-maintenance-service",
+        "opal-frontend",
+        "opal-rm-frontend"
+      ]
+    },
+    {
+      "name": "Test",
+      "contexts": [
+        "ss-test-00-aks",
+        "ss-test-01-aks"
+      ],
+      "expected_services": [
+        "opal-fines-service",
+        "opal-logging-service",
+        "opal-user-service",
+        "opal-file-handler-service",
+        "opal-maintenance-service",
+        "opal-frontend",
+        "opal-rm-frontend"
+      ]
+    }
+  ]
+}
