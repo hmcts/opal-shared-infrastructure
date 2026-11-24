@@ -1,6 +1,9 @@
 # Opal Shared Infrastructure
 This repository contains the shared common infrastructure components for Opal ?!
 
+Generate a local environment report or schedule a daily Teams update with the
+[environment report tool](bin/environment-report/README.md).
+
 ## Reference-data Service Bus access
 
 Each environment's Opal managed identity has Data Sender on its reference-data topic
