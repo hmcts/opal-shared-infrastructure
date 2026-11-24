@@ -51,6 +51,24 @@ def config(contexts=None):
             "contexts": contexts or ["ss-stg-00-aks"], "expected_services": [SERVICE]}]}
 
 
+def rolling_resources():
+    items = resources(image="fines-service:prod-aaaaaaa-20261121090000")
+    image = "fines-service:prod-bbbbbbb-20261122090000"
+    items[0]["spec"]["template"]["spec"]["containers"][0]["image"] = image
+    items[0]["status"].update(updatedReplicas=1, conditions=[
+        {"type": "Progressing", "status": "True", "reason": "ReplicaSetUpdated"}])
+    new_rs = copy.deepcopy(items[1])
+    new_rs["metadata"].update(uid="new-rs", name="new-rs")
+    new_pod = copy.deepcopy(items[-1])
+    new_pod["metadata"].update(uid="new-pod", name="new-pod",
+                               creationTimestamp=report.iso(NOW - timedelta(minutes=1)),
+                               ownerReferences=[{"uid": "new-rs", "controller": True}])
+    new_pod["spec"]["containers"][0]["image"] = image
+    new_pod["status"]["conditions"][0]["status"] = "False"
+    new_pod["status"]["containerStatuses"][0]["ready"] = False
+    return items + [new_rs, new_pod]
+
+
 class HealthTests(unittest.TestCase):
     def summary(self, items=None):
         return report.summarise_cluster(items if items is not None else resources(), [SERVICE], NOW)
@@ -78,14 +96,15 @@ class HealthTests(unittest.TestCase):
         self.assertIn("CrashLoopBackOff", " ".join(row["issues"]))
         self.assertIn("Error", " ".join(row["issues"]))
 
-    def test_new_rollout_with_old_ready_replicas_is_not_healthy(self):
+    def test_new_rollout_with_enough_old_ready_replicas_is_not_an_alert(self):
         items = resources()
         items[0]["spec"]["template"]["spec"]["containers"][0]["image"] = IMAGE + "-new"
         items[0]["status"]["updatedReplicas"] = 0
         row = self.summary(items)["rows"][0]
         self.assertEqual(row["ready"], 1)
-        self.assertEqual(row["health"], "Attention")
-        self.assertIn("Deployment rollout incomplete", row["issues"])
+        self.assertEqual(row["health"], "Healthy")
+        self.assertTrue(row["target_differs"])
+        self.assertEqual(row["issues"], [])
 
     def test_old_and_new_replica_images_are_both_reported(self):
         items = resources()
@@ -96,7 +115,7 @@ class HealthTests(unittest.TestCase):
         row = self.summary(items)["rows"][0]
         self.assertEqual(len(row["running_images"]), 2)
         self.assertEqual(row["pod_age"], "5m–2d 3h")
-        self.assertEqual(row["health"], "Attention")
+        self.assertEqual(row["health"], "Healthy")
 
     def test_injected_sidecar_does_not_look_like_a_version_mismatch(self):
         items = resources()
@@ -136,9 +155,11 @@ class HealthTests(unittest.TestCase):
         row = self.summary(items)["rows"][0]
         self.assertEqual(row["health"], "Scaled to zero")
 
-    def test_stale_controller_generation_is_highlighted(self):
+    def test_controller_catching_up_only_flags_when_replicas_are_unready(self):
         items = resources()
         items[0]["status"]["observedGeneration"] = 1
+        self.assertEqual(self.summary(items)["rows"][0]["health"], "Healthy")
+        items[-1]["status"]["conditions"][0]["status"] = "False"
         self.assertEqual(self.summary(items)["rows"][0]["health"], "Attention")
 
     def test_statefulset_direct_owner_and_daemonset_replicas(self):
@@ -159,13 +180,79 @@ class HealthTests(unittest.TestCase):
         self.assertEqual(len(summary["rows"]), 1)
         self.assertEqual(summary["rows"][0]["service"], SERVICE)
 
-    def test_daemonset_old_ready_pods_do_not_hide_an_incomplete_rollout(self):
+    def test_daemonset_with_enough_ready_pods_does_not_alert_for_an_unfinished_update(self):
         items = resources()
         items[0]["kind"] = "DaemonSet"
         items[0]["status"].update(desiredNumberScheduled=1, updatedNumberScheduled=0)
         items[-1]["metadata"]["ownerReferences"][0]["uid"] = items[0]["metadata"]["uid"]
         row = self.summary([items[0], items[-1]])["rows"][0]
-        self.assertIn("DaemonSet rollout incomplete", row["issues"])
+        self.assertEqual(row["health"], "Healthy")
+        self.assertEqual(row["issues"], [])
+
+    def test_starting_surplus_pods_do_not_flag_a_fully_available_service(self):
+        for phase, waiting in (("Running", None), ("Pending", None),
+                               ("Pending", "PodInitializing"), ("Pending", "ContainerCreating")):
+            with self.subTest(phase=phase, waiting=waiting):
+                items = rolling_resources()
+                items[-1]["status"]["phase"] = phase
+                if waiting:
+                    items[-1]["status"]["containerStatuses"][0]["state"] = {"waiting": {"reason": waiting}}
+                row = self.summary(items)["rows"][0]
+                self.assertEqual(row["health"], "Healthy")
+                self.assertEqual((row["ready"], row["desired"]), (1, 1))
+                self.assertEqual(len(row["running_images"]), 2)
+                self.assertEqual(row["issues"], [])
+
+    def test_surplus_replacement_failures_still_flag_with_enough_ready_replicas(self):
+        for reason in ("CrashLoopBackOff", "ImagePullBackOff", "ErrImagePull",
+                       "CreateContainerConfigError", "Unschedulable", "Error", "Unknown"):
+            with self.subTest(reason=reason):
+                items = rolling_resources()
+                pod = items[-1]
+                if reason == "Unschedulable":
+                    pod["status"]["conditions"].append({"type": "PodScheduled", "status": "False", "reason": reason})
+                elif reason == "Error":
+                    pod["status"]["initContainerStatuses"] = [{"name": "migration", "state": {
+                        "terminated": {"exitCode": 1, "reason": reason}}}]
+                elif reason == "Unknown":
+                    pod["status"]["phase"] = "Unknown"
+                else:
+                    pod["status"]["containerStatuses"][0]["state"] = {"waiting": {"reason": reason}}
+                row = self.summary(items)["rows"][0]
+                self.assertEqual(row["health"], "Attention")
+                self.assertEqual((row["ready"], row["desired"]), (1, 1))
+                self.assertIn(reason, " ".join(row["issues"]))
+
+    def test_failed_rollout_conditions_flag_even_while_old_replicas_serve(self):
+        for kind, status, reason in (("Progressing", "False", "ProgressDeadlineExceeded"),
+                                     ("Progressing", "False", "ReplicaSetCreateError"),
+                                     ("ReplicaFailure", "True", "FailedCreate")):
+            with self.subTest(reason=reason):
+                items = rolling_resources()
+                items[0]["status"]["conditions"] = [{"type": kind, "status": status, "reason": reason}]
+                row = self.summary(items)["rows"][0]
+                self.assertEqual(row["health"], "Attention")
+                self.assertEqual(row["ready"], row["desired"])
+                self.assertIn(reason, " ".join(row["issues"]))
+
+    def test_previous_rollout_failure_is_not_applied_to_unobserved_new_generation(self):
+        items = rolling_resources()
+        items[0]["metadata"]["generation"] = 3
+        items[0]["status"]["conditions"] = [
+            {"type": "Progressing", "status": "False", "reason": "ProgressDeadlineExceeded"}]
+        self.assertEqual(self.summary(items)["rows"][0]["health"], "Healthy")
+        items[0]["status"]["observedGeneration"] = 3
+        self.assertEqual(self.summary(items)["rows"][0]["health"], "Attention")
+
+    def test_starting_pods_remain_flagged_when_availability_is_insufficient(self):
+        items = rolling_resources()
+        items[2]["status"]["conditions"][0]["status"] = "False"
+        items[2]["status"]["containerStatuses"][0]["ready"] = False
+        items[-1]["status"]["containerStatuses"][0]["state"] = {"waiting": {"reason": "PodInitializing"}}
+        row = self.summary(items)["rows"][0]
+        self.assertEqual(row["health"], "Attention")
+        self.assertEqual((row["ready"], row["desired"]), (0, 1))
+        self.assertIn("PodInitializing", " ".join(row["issues"]))
 
 
 class CoverageTests(unittest.TestCase):
@@ -249,6 +336,30 @@ class CoverageTests(unittest.TestCase):
 class RenderingTests(unittest.TestCase):
     def sample(self):
         return report.generate_report(config(), NOW, lambda *_: resources())
+
+    def test_fully_available_rolling_updates_across_clusters_produce_all_clear(self):
+        result = report.generate_report(config(["00", "01"]), NOW, lambda *_: rolling_resources())
+        self.assertIn("All clear", json.dumps(report.render_cards(result)))
+        self.assertIn("aaaaaaa", report.render_markdown(result))
+        self.assertIn("bbbbbbb", report.render_markdown(result))
+
+    def test_old_image_during_healthy_rollout_still_triggers_image_age_warning(self):
+        items = rolling_resources()
+        items[2]["spec"]["containers"][0]["image"] = "fines-service:prod-aaaaaaa-20261101090000"
+        result = report.generate_report(config(), NOW, lambda *_: items)
+        self.assertEqual(report.summarise_environment(result["environments"][0])["rows"][0]["health"], "Healthy")
+        visible = json.dumps(report.render_cards(result)[0]["body"])
+        self.assertIn("Image age alert", visible)
+        self.assertIn("14+ days old", visible)
+
+    def test_failed_rollout_explanation_is_visible_without_expanding_card(self):
+        items = rolling_resources()
+        items[0]["status"]["conditions"] = [
+            {"type": "Progressing", "status": "False", "reason": "ProgressDeadlineExceeded"}]
+        result = report.generate_report(config(), NOW, lambda *_: items)
+        visible = json.dumps(report.render_cards(result)[0]["body"])
+        self.assertIn("Deployment stopped progressing (ProgressDeadlineExceeded)", visible)
+        self.assertIn("Attention", visible)
 
     def test_preview_has_one_compact_environment_table(self):
         markdown = report.render_markdown(self.sample())
@@ -464,7 +575,7 @@ class RenderingTests(unittest.TestCase):
         row = report.summarise_environment(result["environments"][0])["rows"][0]
         self.assertEqual(row["health"], "Attention")
         self.assertEqual(row["replicas"], "1/2")
-        self.assertIn("Running (01)", row["notes"])
+        self.assertIn("Pod running but not ready (01)", row["notes"])
 
     def test_missing_service_in_one_cluster_has_explicit_unknown_replica_count(self):
         result = report.generate_report(config(["ss-stg-00-aks", "ss-stg-01-aks"]), NOW,

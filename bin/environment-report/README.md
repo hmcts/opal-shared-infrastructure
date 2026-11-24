@@ -3,6 +3,7 @@
 Checks Staging, Demo, ITHC and Test. Teams shows service problems, images aged
 12+ days (red at 14), and unverifiable image dates, grouped by environment.
 Full reports retain every service. Build dates come from image tags; ages assume UTC.
+Normal rollouts stay hidden while enough replicas are ready; explicit failures remain visible.
 
 Requires Python 3.9+, kubectl, Azure CLI, kubelogin, your Azure sign-in and VPN access.
 Run commands from the repository root.

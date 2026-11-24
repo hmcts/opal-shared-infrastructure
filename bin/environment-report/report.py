@@ -136,13 +136,14 @@ def pod_ready(pod):
             and bool(statuses) and all(c.get("ready") for c in statuses))
 
 
-def pod_issues(pod):
+def pod_issues(pod, ignore_starting=False):
     status = pod.get("status", {})
     reasons = []
     for container in status.get("initContainerStatuses", []) + status.get("containerStatuses", []):
         state = container.get("state", {})
-        if state.get("waiting", {}).get("reason"):
-            reasons.append(state["waiting"]["reason"])
+        waiting = state.get("waiting", {}).get("reason")
+        if waiting and not (ignore_starting and waiting in ("PodInitializing", "ContainerCreating")):
+            reasons.append(waiting)
         terminated = state.get("terminated", {})
         if terminated and terminated.get("exitCode", 0) != 0:
             reasons.append(terminated.get("reason", "Container failed"))
@@ -150,7 +151,11 @@ def pod_issues(pod):
         if condition.get("type") == "PodScheduled" and condition.get("status") == "False":
             reasons.append(condition.get("reason", "Unschedulable"))
     if not pod_ready(pod) and not reasons:
-        reasons.append(status.get("reason") or status.get("phase") or "Not ready")
+        phase = status.get("phase")
+        if status.get("reason") or phase in ("Failed", "Unknown"):
+            reasons.append(status.get("reason") or phase)
+        elif not ignore_starting:
+            reasons.append("Pod running but not ready" if phase == "Running" else "Pod not ready")
     if reasons:
         return [f"{pod['metadata']['name']}: {', '.join(sorted(set(reasons)))}"]
     return []
@@ -177,9 +182,10 @@ def workload_row(workload, pods, expected, now):
     desired_images = image_list(spec.get("template", {}).get("spec", {}).get("containers", []))
     running_images = sorted({image for pod in pods
                              for image in image_list(pod.get("spec", {}).get("containers", []))})
-    issues = [issue for pod in pods for issue in pod_issues(pod)]
+    enough_ready = desired > 0 and ready >= desired
+    issues = [issue for pod in pods for issue in pod_issues(pod, ignore_starting=enough_ready)]
     observed = status.get("observedGeneration", 0) >= metadata.get("generation", 1)
-    if not observed:
+    if not observed and not enough_ready:
         issues.append("Controller has not observed the latest configuration")
     if desired and ready < desired:
         issues.append(f"Only {ready}/{desired} replicas ready")
@@ -190,23 +196,15 @@ def workload_row(workload, pods, expected, now):
     app_images = {image for pod in pods
                   for image in image_list([c for c in pod.get("spec", {}).get("containers", [])
                                            if c["name"] in target_names])}
-    if desired and app_images != set(desired_images):
-        issues.append("Pod images differ from target; rollout may be in progress")
-    if kind == "Deployment" and desired:
-        if (status.get("updatedReplicas", 0) < desired
-                or status.get("availableReplicas", 0) < desired):
-            issues.append("Deployment rollout incomplete")
-    if kind == "StatefulSet" and desired:
-        # OnDelete and partitioned updates intentionally leave older replicas.
-        if (spec.get("updateStrategy", {}).get("type", "RollingUpdate") != "OnDelete"
-                and status.get("currentRevision") != status.get("updateRevision")):
-            issues.append("StatefulSet revisions differ")
-    if kind == "DaemonSet" and desired:
-        if status.get("numberUnavailable", 0):
-            issues.append("DaemonSet has unavailable pods")
-        if (spec.get("updateStrategy", {}).get("type", "RollingUpdate") != "OnDelete"
-                and status.get("updatedNumberScheduled", 0) < desired):
-            issues.append("DaemonSet rollout incomplete")
+    # Old replicas can preserve availability while replacements start. Only a
+    # reported failure, rather than an unfinished update, needs an alert.
+    if desired and observed:
+        for condition in status.get("conditions", []):
+            reason = condition.get("reason", "Unknown reason")
+            if condition.get("type") == "Progressing" and condition.get("status") == "False":
+                issues.append(f"{kind} stopped progressing ({reason})")
+            elif condition.get("type") == "ReplicaFailure" and condition.get("status") == "True":
+                issues.append(f"{kind} replica failure ({reason})")
     ages = [(now - timestamp(p["metadata"]["creationTimestamp"])).total_seconds()
             for p in pods if p["metadata"].get("creationTimestamp")]
     age_labels = [age(min(ages)), age(max(ages))] if ages else []
