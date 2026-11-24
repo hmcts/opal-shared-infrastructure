@@ -16,3 +16,6 @@
 
 /ssh/bais-sftp-key-full.sh
 /bais-emulator/data/**/.ssh/
+
+# Local environment report output, webhook and logs
+/.environment-report/
