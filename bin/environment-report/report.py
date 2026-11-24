@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 WORKLOAD_KINDS = {"Deployment", "StatefulSet", "DaemonSet"}
 MAX_PAYLOAD_BYTES = 26000  # Leave headroom below the Teams 28 KB limit.
+K9S_SETUP_URL = "https://hmcts.atlassian.net/wiki/spaces/PO/pages/271490998/Connect+to+Azure+Kubernetes+pods"
 
 
 class ReportError(Exception):
@@ -578,6 +579,7 @@ def render_cards(report):
             details.append({"type": "Container", "separator": True, "spacing": "Medium", "items": detail})
         actions = [{"type": "Action.ShowCard", "title": "Images & details", "card": {
             "type": "AdaptiveCard", "version": "1.2", "body": details}}] if details else []
+        actions.append({"type": "Action.OpenUrl", "title": "Set up k9s", "url": K9S_SETUP_URL})
         return {"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard",
                 "version": "1.2", "msteams": {"width": "Full"}, "body": body, "actions": actions,
                 "fallbackText": f"Opal · {summary['name']} · {health} · {counts}"}

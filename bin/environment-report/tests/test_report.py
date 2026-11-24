@@ -270,6 +270,9 @@ class RenderingTests(unittest.TestCase):
         for card, name in zip(cards, ("Staging", "Demo", "ITHC", "Test")):
             self.assertEqual(card["body"][1]["columns"][0]["items"][0]["text"], name)
             self.assertEqual(card["actions"][0]["type"], "Action.ShowCard")
+            self.assertEqual(card["actions"][-1], {
+                "type": "Action.OpenUrl", "title": "Set up k9s",
+                "url": "https://hmcts.atlassian.net/wiki/spaces/PO/pages/271490998/Connect+to+Azure+Kubernetes+pods"})
             self.assertLessEqual(report.payload_size(card), report.MAX_PAYLOAD_BYTES)
 
     def test_build_date_and_time_are_visible_separately_from_pod_age(self):
@@ -346,7 +349,8 @@ class RenderingTests(unittest.TestCase):
             self.assertIn(name, visible)
         self.assertNotIn("Built ", visible)
         self.assertNotIn("b4ae8c7", visible)
-        self.assertEqual(cards[0]["actions"], [])
+        self.assertEqual([action["type"] for action in cards[0]["actions"]], ["Action.OpenUrl"])
+        self.assertEqual(cards[0]["actions"][0]["title"], "Set up k9s")
         self.assertIn(image, report.render_markdown(result))
 
     def test_only_unhealthy_or_aging_services_appear_in_teams(self):
@@ -440,7 +444,7 @@ class RenderingTests(unittest.TestCase):
         self.assertIn("Check failed", json.dumps(card["body"]))
         self.assertIn("ss-stg-00-aks", json.dumps(card["body"]))
         self.assertNotIn("All clear", json.dumps(card))
-        self.assertEqual(card["actions"], [])
+        self.assertEqual([action["type"] for action in card["actions"]], ["Action.OpenUrl"])
 
     def test_two_clusters_share_a_row_without_hiding_different_images(self):
         conf = config(["ss-stg-00-aks", "ss-stg-01-aks"])
