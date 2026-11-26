@@ -27,10 +27,8 @@ each entry and apply the role removal before retiring its preview.
 approved by `DTS Opal Database Access Approvers`. Connect with the group name as the
 database user and your own Entra token as the password - see details in the terraform-module-postgres-flexible repo readme for further instructions.
 
-In each Opal database, in the `public` schema, the role has:
+In `opal-fines-db`, in the `public` schema, the role has:
 
-- `USAGE` on the schema
-- `SELECT`, `INSERT`, `UPDATE`, `DELETE` on tables
-- `USAGE`, `SELECT`, `UPDATE` on sequences
-
-It has no `CREATE`, `TRUNCATE`, `REFERENCES` or `TRIGGER`, and does not own any objects.
+- `USAGE` and `CREATE` on the schema 
+- `SELECT`, `INSERT`, `UPDATE`, `DELETE` on the existing tables
+- `USAGE`, `SELECT`, `UPDATE` on the existing sequences
